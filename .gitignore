@@ -1,0 +1,38 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Environment — contains secrets, never commit
+.env
+
+# Database
+*.db
+*.sqlite
+
+# Logs and PID files
+.logs/
+.pids
+
+# Node
+skywatcher-dashboard/node_modules/
+skywatcher-dashboard/dist/
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/settings.json
+
+# Supabase local
+.supabase/
+supabase/.temp/
+
+# Claude Code
+.agents/
+.claude/
+skills-lock.json

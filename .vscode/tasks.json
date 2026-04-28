@@ -1,0 +1,126 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start MQTT Broker",
+      "type": "shell",
+      "command": "/opt/homebrew/sbin/mosquitto",
+      "isBackground": true,
+      "presentation": {
+        "label": "MQTT Broker",
+        "panel": "dedicated",
+        "reveal": "always",
+        "group": "skywatcher",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Backend",
+      "type": "shell",
+      "command": "source .venv/bin/activate && cd backend && python3 app.py",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "presentation": {
+        "label": "Flask Backend",
+        "panel": "dedicated",
+        "reveal": "always",
+        "group": "skywatcher",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Frontend",
+      "type": "shell",
+      "command": "cd skywatcher-dashboard && ./node_modules/.bin/vite",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "presentation": {
+        "label": "React Frontend",
+        "panel": "dedicated",
+        "reveal": "always",
+        "group": "skywatcher",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "▶ Start Simulator",
+      "detail": "Start the RFID bag simulator — run this when ready to demo bag flow",
+      "type": "shell",
+      "command": "source .venv/bin/activate && cd simulator && python3 rfid_sim.py",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "presentation": {
+        "label": "RFID Simulator",
+        "panel": "dedicated",
+        "reveal": "always",
+        "group": "skywatcher",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "⏹ Stop Simulator",
+      "detail": "Stop the simulator without touching the rest of the system",
+      "type": "shell",
+      "command": "pkill -f rfid_sim.py && echo 'Simulator stopped.' || echo 'Simulator was not running.'",
+      "presentation": {
+        "panel": "shared",
+        "reveal": "always",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🚀 Start SkyWatcher",
+      "detail": "Starts MQTT broker, Flask backend, and React frontend in parallel",
+      "dependsOn": [
+        "Start MQTT Broker",
+        "Start Backend",
+        "Start Frontend"
+      ],
+      "dependsOrder": "parallel",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🚀 Start SkyWatcher + Simulator",
+      "detail": "Starts all services including the RFID bag simulator",
+      "dependsOn": [
+        "Start MQTT Broker",
+        "Start Backend",
+        "Start Frontend",
+        "Start Simulator"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "🛑 Stop SkyWatcher",
+      "detail": "Kills all running SkyWatcher processes",
+      "type": "shell",
+      "command": "${workspaceFolder}/stop.sh",
+      "presentation": {
+        "panel": "shared",
+        "reveal": "always",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    }
+  ]
+}

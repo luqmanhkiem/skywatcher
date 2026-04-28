@@ -1,0 +1,231 @@
+<mxfile host="app.diagrams.net" modified="2026-04-16" agent="SkyWatcher" version="24.0.0" type="device">
+  <diagram id="level1-dfd" name="Level 1 DFD">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;SkyWatcher — Level 1 Data Flow Diagram&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontColor=#1B3A5C;" vertex="1" parent="1">
+          <mxGeometry x="450" y="20" width="500" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== EXTERNAL ENTITIES ========== -->
+
+        <!-- RFID Simulator -->
+        <mxCell id="ext_rfid" value="&lt;b&gt;RFID Scanner&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;(Simulator)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2d1810;strokeColor=#F5A623;fontColor=#F5A623;fontSize=12;arcSize=12;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="180" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin/Staff -->
+        <mxCell id="ext_staff" value="&lt;b&gt;Admin /&lt;br&gt;Ground Staff&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0d2618;strokeColor=#00CC7D;fontColor=#00CC7D;fontSize=12;arcSize=12;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="180" width="160" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Passenger -->
+        <mxCell id="ext_pax" value="&lt;b&gt;Passenger&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a1530;strokeColor=#A78BFA;fontColor=#A78BFA;fontSize=12;arcSize=12;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="620" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== DATA STORE ========== -->
+
+        <!-- SQLite Database -->
+        <mxCell id="ds1" value="&lt;b&gt;D1&lt;/b&gt; | SQLite Database (skywatcher.db)" style="shape=partialRectangle;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1B3A5C;fontColor=#1B3A5C;fontSize=12;top=0;bottom=0;right=0;left=1;strokeWidth=2;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="740" width="550" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== PROCESSES ========== -->
+
+        <!-- Process 1.0: RFID Simulator -->
+        <mxCell id="p1" value="&lt;b style=&quot;font-size:14px;&quot;&gt;1.0&lt;/b&gt;&lt;br&gt;&lt;b&gt;RFID&lt;br&gt;Simulator&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF8EE;strokeColor=#F5A623;fontColor=#333;fontSize=11;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="300" y="150" width="130" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- Process 2.0: Event Ingestion -->
+        <mxCell id="p2" value="&lt;b style=&quot;font-size:14px;&quot;&gt;2.0&lt;/b&gt;&lt;br&gt;&lt;b&gt;Event&lt;br&gt;Ingestion&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EEFBF4;strokeColor=#00CC7D;fontColor=#333;fontSize=11;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="560" y="150" width="130" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- Process 3.0: Anomaly Detection -->
+        <mxCell id="p3" value="&lt;b style=&quot;font-size:14px;&quot;&gt;3.0&lt;/b&gt;&lt;br&gt;&lt;b&gt;Anomaly&lt;br&gt;Detection&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#FF6B6B;fontColor=#333;fontSize=11;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="560" y="400" width="130" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- Process 4.0: REST API -->
+        <mxCell id="p4" value="&lt;b style=&quot;font-size:14px;&quot;&gt;4.0&lt;/b&gt;&lt;br&gt;&lt;b&gt;REST API&lt;br&gt;Server&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#4FC3F7;fontColor=#333;fontSize=11;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="870" y="280" width="130" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- Process 5.0: Dashboard -->
+        <mxCell id="p5" value="&lt;b style=&quot;font-size:14px;&quot;&gt;5.0&lt;/b&gt;&lt;br&gt;&lt;b&gt;Dashboard&lt;br&gt;(React)&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F3F0FF;strokeColor=#A78BFA;fontColor=#333;fontSize=11;shadow=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="280" width="130" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ========== DATA FLOWS ========== -->
+
+        <!-- External RFID → P1 -->
+        <mxCell id="f0" style="rounded=1;strokeColor=#F5A623;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=8;" edge="1" source="ext_rfid" target="p1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f0_label" value="&lt;font style=&quot;font-size:9px;color:#F5A623;&quot;&gt;Bag config&lt;/font&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="160" width="80" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- P1 → P2: MQTT events -->
+        <mxCell id="f1" style="rounded=1;strokeColor=#F5A623;strokeWidth=2.5;endArrow=blockThin;endFill=1;endSize=10;" edge="1" source="p1" target="p2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f1_label" value="&lt;div style=&quot;background:#FFF8EE;border:1px solid #F5A623;border-radius:6px;padding:3px 8px;font-size:10px;color:#333;&quot;&gt;&lt;b&gt;D1:&lt;/b&gt; JSON payload&lt;br&gt;via MQTT (baggage/events)&lt;/div&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="180" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- P2 → Data Store: Insert Event -->
+        <mxCell id="f2" style="rounded=1;strokeColor=#00CC7D;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=8;" edge="1" source="p2" target="ds1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="400"/>
+              <mxPoint x="450" y="760"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f2_label" value="&lt;div style=&quot;background:#EEFBF4;border:1px solid #00CC7D;border-radius:6px;padding:3px 8px;font-size:10px;color:#333;&quot;&gt;&lt;b&gt;D2:&lt;/b&gt; INSERT event&lt;br&gt;+ UPSERT bag record&lt;/div&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="280" y="480" width="160" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- P2 → P3: Payload for anomaly check -->
+        <mxCell id="f3" style="rounded=1;strokeColor=#FF6B6B;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=8;" edge="1" source="p2" target="p3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f3_label" value="&lt;div style=&quot;background:#FFEBEE;border:1px solid #FF6B6B;border-radius:6px;padding:3px 8px;font-size:10px;color:#333;&quot;&gt;&lt;b&gt;D3:&lt;/b&gt; Event payload&lt;br&gt;for anomaly checks&lt;/div&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="430" y="310" width="150" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- P3 → Data Store: Store Anomaly -->
+        <mxCell id="f4" style="rounded=1;strokeColor=#FF6B6B;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=8;" edge="1" source="p3" target="ds1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f4_label" value="&lt;div style=&quot;background:#FFEBEE;border:1px solid #FF6B6B;border-radius:6px;padding:3px 8px;font-size:10px;color:#333;&quot;&gt;&lt;b&gt;D4:&lt;/b&gt; INSERT anomaly&lt;br&gt;(if detected)&lt;/div&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="630" y="600" width="140" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- P3 reads from Data Store (history) -->
+        <mxCell id="f4b" style="rounded=1;strokeColor=#888;strokeWidth=1.5;dashed=1;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="ds1" target="p3" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="760"/>
+              <mxPoint x="750" y="500"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f4b_label" value="&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;Read event history&lt;/font&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="755" y="590" width="110" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- Data Store → P4: Query results -->
+        <mxCell id="f5" style="rounded=1;strokeColor=#4FC3F7;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=8;" edge="1" source="ds1" target="p4" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="935" y="760"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f5_label" value="&lt;div style=&quot;background:#E3F2FD;border:1px solid #4FC3F7;border-radius:6px;padding:3px 8px;font-size:10px;color:#333;&quot;&gt;&lt;b&gt;D5:&lt;/b&gt; Query results&lt;br&gt;(bags, events, anomalies, users)&lt;/div&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="880" y="540" width="200" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- P4 writes to Data Store (resolve/CRUD) -->
+        <mxCell id="f5b" style="rounded=1;strokeColor=#4FC3F7;strokeWidth=1.5;dashed=1;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="p4" target="ds1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="400"/>
+              <mxPoint x="1020" y="760"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f5b_label" value="&lt;font style=&quot;font-size:9px;color:#4FC3F7;&quot;&gt;UPDATE/INSERT&lt;br&gt;(resolve, CRUD)&lt;/font&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1025" y="490" width="100" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- P4 ↔ P5: JSON responses -->
+        <mxCell id="f6" style="rounded=1;strokeColor=#A78BFA;strokeWidth=2.5;endArrow=blockThin;endFill=1;endSize=10;startArrow=blockThin;startFill=1;startSize=10;" edge="1" source="p4" target="p5" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f6_label" value="&lt;div style=&quot;background:#F3F0FF;border:1px solid #A78BFA;border-radius:6px;padding:3px 8px;font-size:10px;color:#333;&quot;&gt;&lt;b&gt;D6:&lt;/b&gt; JSON API&lt;br&gt;(HTTP requests ↔ responses)&lt;/div&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="970" y="230" width="190" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- P5 → Staff -->
+        <mxCell id="f7" style="rounded=1;strokeColor=#00CC7D;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=8;" edge="1" source="p5" target="ext_staff" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f7_label" value="&lt;font style=&quot;font-size:9px;color:#00CC7D;&quot;&gt;Dashboard views&lt;/font&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="220" width="100" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- Staff → P5 -->
+        <mxCell id="f8" style="rounded=1;strokeColor=#00CC7D;strokeWidth=1.5;dashed=1;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="ext_staff" target="p5" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="300"/>
+              <mxPoint x="1350" y="350"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f8_label" value="&lt;font style=&quot;font-size:9px;color:#00CC7D;&quot;&gt;Actions (resolve, manage)&lt;/font&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="300" width="140" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- P5 → Passenger -->
+        <mxCell id="f9" style="rounded=1;strokeColor=#A78BFA;strokeWidth=2;endArrow=blockThin;endFill=1;endSize=8;" edge="1" source="p5" target="ext_pax" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f9_label" value="&lt;font style=&quot;font-size:9px;color:#A78BFA;&quot;&gt;Bag tracking status&lt;/font&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="500" width="120" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- Passenger → P5 (query) -->
+        <mxCell id="f10" style="rounded=1;strokeColor=#A78BFA;strokeWidth=1.5;dashed=1;endArrow=blockThin;endFill=1;endSize=6;" edge="1" source="ext_pax" target="p5" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1400" y="645"/>
+              <mxPoint x="1400" y="380"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f10_label" value="&lt;font style=&quot;font-size:9px;color:#A78BFA;&quot;&gt;Tracking query&lt;br&gt;(flight + name)&lt;/font&gt;" style="text;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="440" width="90" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend_bg" value="" style="rounded=1;fillColor=#f5f5f5;strokeColor=#CCCCCC;" vertex="1" parent="1">
+          <mxGeometry x="40" y="680" width="370" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="ltitle" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;fontSize=11;fontColor=#333;" vertex="1" parent="1">
+          <mxGeometry x="55" y="688" width="60" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1" value="" style="ellipse;fillColor=#FFF8EE;strokeColor=#F5A623;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="55" y="714" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1t" value="= Process" style="text;html=1;fontSize=10;fontColor=#333;align=left;" vertex="1" parent="1">
+          <mxGeometry x="82" y="712" width="80" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2" value="" style="rounded=1;fillColor=#2d1810;strokeColor=#F5A623;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="55" y="736" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2t" value="= External Entity" style="text;html=1;fontSize=10;fontColor=#333;align=left;" vertex="1" parent="1">
+          <mxGeometry x="82" y="734" width="110" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3" value="" style="shape=partialRectangle;fillColor=#E3F2FD;strokeColor=#1B3A5C;strokeWidth=2;top=0;bottom=0;right=0;left=1;" vertex="1" parent="1">
+          <mxGeometry x="55" y="758" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3t" value="= Data Store" style="text;html=1;fontSize=10;fontColor=#333;align=left;" vertex="1" parent="1">
+          <mxGeometry x="82" y="756" width="80" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="l4t" value="→  = Data Flow    ⇢  = Read/Write" style="text;html=1;fontSize=10;fontColor=#333;align=left;" vertex="1" parent="1">
+          <mxGeometry x="55" y="780" width="250" height="18" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
