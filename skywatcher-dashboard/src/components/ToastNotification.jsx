@@ -2,10 +2,10 @@ import { X, AlertTriangle, AlertCircle, Info, CheckCircle } from 'lucide-react'
 import { useToast } from '../context/ToastContext'
 
 const TYPE_META = {
-  anomaly: { icon: AlertTriangle, color: '#FF3355', bg: 'rgba(255,51,85,0.12)',   border: 'rgba(255,51,85,0.35)',   label: 'ANOMALY DETECTED' },
-  warning: { icon: AlertCircle,   color: '#FF7A2F', bg: 'rgba(255,122,47,0.12)', border: 'rgba(255,122,47,0.35)', label: 'WARNING' },
-  success: { icon: CheckCircle,   color: '#00CC7D', bg: 'rgba(0,204,125,0.12)',  border: 'rgba(0,204,125,0.35)',  label: 'SUCCESS' },
-  info:    { icon: Info,          color: '#F5A623', bg: 'rgba(245,166,35,0.12)', border: 'rgba(245,166,35,0.35)', label: 'INFO' },
+  anomaly: { icon: AlertTriangle, color: '#DC2626', bg: 'rgba(220,38,38,0.10)',  border: 'rgba(220,38,38,0.30)', label: 'Anomaly detected' },
+  warning: { icon: AlertCircle,   color: '#EA580C', bg: 'rgba(234,88,12,0.10)',  border: 'rgba(234,88,12,0.30)', label: 'Warning' },
+  success: { icon: CheckCircle,   color: '#16A34A', bg: 'rgba(22,163,74,0.10)',  border: 'rgba(22,163,74,0.30)', label: 'Success' },
+  info:    { icon: Info,          color: '#3D5AFE', bg: 'rgba(61,90,254,0.10)',  border: 'rgba(61,90,254,0.30)', label: 'Info' },
 }
 
 function Toast({ toast, onDismiss }) {
@@ -22,7 +22,7 @@ function Toast({ toast, onDismiss }) {
       borderTop: `2px solid ${meta.color}`,
       borderRadius: 10,
       padding: '12px 14px',
-      boxShadow: `0 12px 40px rgba(0,0,0,0.6), 0 0 20px ${meta.color}20`,
+      boxShadow: `0 10px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)`,
       minWidth: 280,
       maxWidth: 360,
       opacity: toast.removing ? 0 : 1,
@@ -39,10 +39,10 @@ function Toast({ toast, onDismiss }) {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700, color: meta.color, marginBottom: 3, letterSpacing: '0.1em' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: meta.color, marginBottom: 3, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
           {meta.label}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.45, wordBreak: 'break-word' }}>
+        <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.45, wordBreak: 'break-word' }}>
           {toast.message}
         </div>
       </div>

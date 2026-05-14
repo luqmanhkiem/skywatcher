@@ -45,15 +45,15 @@ const ANOMALY_LABELS = {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: 'var(--surface-2)',
+    background: 'var(--surface)',
     border: '1px solid var(--border-2)',
     borderRadius: 9,
     fontSize: 12,
-    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
   },
   labelStyle:  { color: 'var(--text)', fontWeight: 600, marginBottom: 4 },
-  itemStyle:   { color: 'var(--muted-2)' },
-  cursor:      { fill: 'rgba(255,255,255,0.03)' },
+  itemStyle:   { color: 'var(--muted)' },
+  cursor:      { fill: 'rgba(0,0,0,0.04)' },
 }
 
 function StatCard({ label, value, sub, accent, Icon, loading }) {

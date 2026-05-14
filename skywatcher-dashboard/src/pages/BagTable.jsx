@@ -201,12 +201,12 @@ export default function BagTable() {
                     onClick={() => setSelected(bag)}
                     style={{
                       borderBottom: '1px solid var(--border)',
-                      background: i % 2 === 1 ? 'rgba(255,255,255,0.015)' : 'transparent',
+                      background: i % 2 === 1 ? 'rgba(0,0,0,0.025)' : 'transparent',
                       cursor: 'pointer',
                       transition: 'background 0.12s',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,166,35,0.05)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = i % 2 === 1 ? 'rgba(255,255,255,0.015)' : 'transparent' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = i % 2 === 1 ? 'rgba(0,0,0,0.025)' : 'transparent' }}
                   >
                     <td style={{ padding: '11px 14px' }}>
                       <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 11, color: 'var(--accent)', letterSpacing: '0.04em' }}>

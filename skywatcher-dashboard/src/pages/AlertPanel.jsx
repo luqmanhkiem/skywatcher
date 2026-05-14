@@ -94,7 +94,7 @@ export default function AlertPanel() {
                   transition: 'all 0.15s',
                   display: 'flex', alignItems: 'center', gap: 5,
                 }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
               >
                 {f}

@@ -13,7 +13,6 @@ const CHECKPOINTS = ['check_in', 'security', 'sorting', 'loading', 'arrival']
 const ROLE_STYLE = {
   admin:        { bg: 'rgba(245,166,35,0.12)',  color: '#F5A623', label: 'Admin' },
   ground_staff: { bg: 'rgba(0,204,125,0.12)',   color: '#00CC7D', label: 'Ground Staff' },
-  passenger:    { bg: 'rgba(167,139,250,0.12)', color: '#A78BFA', label: 'Passenger' },
 }
 
 const EMPTY_FORM = { username: '', password: '', role: 'ground_staff', checkpoint: '' }
@@ -36,7 +35,7 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+      background: 'rgba(15,15,15,0.45)', backdropFilter: 'blur(4px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
@@ -48,9 +47,9 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
         width: 440,
         maxHeight: '90vh',
         overflowY: 'auto',
-        boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 30px rgba(245,166,35,0.06)',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
       }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 18, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text)', marginBottom: 22 }}>{title}</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--text)', marginBottom: 22 }}>{title}</h2>
 
         {error && (
           <div style={{
@@ -230,9 +229,7 @@ export default function UsersView() {
                   const inactive = !u.active
                   const assignment = u.role === 'ground_staff' && u.checkpoint
                     ? u.checkpoint.replace('_', ' ')
-                    : u.role === 'passenger'
-                      ? [u.flight_id, u.tag_id].filter(Boolean).join(' · ')
-                      : '—'
+                    : '—'
 
                   return (
                     <tr key={u.id} style={{

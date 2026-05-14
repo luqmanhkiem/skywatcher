@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -31,7 +31,7 @@ def insert_event(payload: dict):
     checkpoint    = payload.get('checkpoint')
     flight_id     = payload.get('flight_id', 'FL000')
     passenger     = payload.get('passenger', 'Unknown')
-    timestamp     = payload.get('timestamp', datetime.utcnow().isoformat())
+    timestamp     = payload.get('timestamp', datetime.now(timezone.utc).isoformat())
     duration_mins = payload.get('duration_mins', 0)
     status        = 'arrived' if checkpoint == 'arrival' else 'in_transit'
 
@@ -112,7 +112,6 @@ def seed_users():
         {'username': 'staff_sorting',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'sorting',  'flight_id': None,    'tag_id': None},
         {'username': 'staff_loading',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'loading',  'flight_id': None,    'tag_id': None},
         {'username': 'staff_arrival',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'arrival',  'flight_id': None,    'tag_id': None},
-        {'username': 'passenger_test', 'password_hash': generate_password_hash(method='pbkdf2:sha256', password='pass123'),  'role': 'passenger',    'checkpoint': None,       'flight_id': 'MH370', 'tag_id': 'TAG-1001'},
     ]
 
     db.table('users').insert(accounts).execute()
@@ -269,6 +268,6 @@ def resolve_alert(alert_id: int) -> Optional[dict]:
     db   = get_db()
     resp = db.table('anomalies').update({
         'resolved':    1,
-        'resolved_at': datetime.utcnow().isoformat(),
+        'resolved_at': datetime.now(timezone.utc).isoformat(),
     }).eq('id', alert_id).execute()
     return resp.data[0] if resp.data else None

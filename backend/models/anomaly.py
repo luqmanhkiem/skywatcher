@@ -33,20 +33,39 @@ CHECKPOINT_ORDER: dict[str, int] = {
 # Isolation Forest — trained once at module import on synthetic normal data
 # ---------------------------------------------------------------------------
 
-def _build_training_data(n: int = 500) -> np.ndarray:
+# Per-checkpoint normal duration ranges, padded slightly beyond the simulator's
+# NORMAL_DURATIONS so values at the simulator's edges (e.g. arrival 1.0 min,
+# loading 12 min) sit comfortably inside the model's "normal" region.
+# Format: (low, high) for sampling.
+_TRAINING_DURATIONS = {
+    0: (1, 10),   # check_in   (sim: 3–8)
+    1: (1, 8),    # security   (sim: 2–6)
+    2: (2, 13),   # sorting    (sim: 4–10)
+    3: (3, 15),   # loading    (sim: 5–12)
+    4: (0.5, 6),  # arrival    (sim: 1–4)
+}
+
+
+def _build_training_data(n_per_cp: int = 200) -> np.ndarray:
     """
-    Synthetic normal-behaviour data.
+    Synthetic normal-behaviour data, sampled per checkpoint to match the
+    simulator's per-checkpoint duration ranges (with padding).
     Each row: [duration_mins, checkpoint_idx, expected_next_idx]
-    Normal bags: 2–12 min per checkpoint, move forward one step at a time.
     """
     rng = np.random.default_rng(42)
-    cp_indices = rng.integers(0, 5, size=n)
-    durations = rng.uniform(2, 12, size=n)
-    next_indices = np.minimum(cp_indices + 1, 4)
-    return np.column_stack([durations, cp_indices, next_indices])
+    rows = []
+    for cp_idx, (lo, hi) in _TRAINING_DURATIONS.items():
+        durations = rng.uniform(lo, hi, size=n_per_cp)
+        next_idx = min(cp_idx + 1, 4)
+        for d in durations:
+            rows.append([d, cp_idx, next_idx])
+    return np.array(rows)
 
 
-_forest = IsolationForest(n_estimators=100, contamination=0.05, random_state=42)
+# contamination=0.01: only the most extreme 1% of training points are treated
+# as anomalous. This keeps the decision boundary tight against true outliers
+# (long stalls, durations far outside any checkpoint's normal range).
+_forest = IsolationForest(n_estimators=100, contamination=0.01, random_state=42)
 _forest.fit(_build_training_data())
 print('[AnomalyEngine] Isolation Forest trained on synthetic normal data.')
 
@@ -113,10 +132,13 @@ def detect_anomaly(payload: dict) -> Optional[dict]:
             )
 
     # 4. Catch-all — Isolation Forest flags subtle anomaly
-    # Skip on first scan (no history baseline yet) and require high confidence
+    # Skip on first scan (no history baseline yet). Gate by the model's own
+    # contamination-based decision boundary (predict() == -1) instead of a raw
+    # score threshold, which was previously firing on every normal event.
     expected_next = min(cp_idx + 1, 4)
-    score = _confidence([duration_mins, cp_idx, expected_next])
-    if len(history) > 1 and score > 0.75:
+    features = [duration_mins, cp_idx, expected_next]
+    if len(history) > 1 and _forest.predict([features])[0] == -1:
+        score = _confidence(features)
         return _anomaly(
             tag_id, 'ANOMALY', checkpoint, score,
             f'Unusual movement pattern at {checkpoint} (confidence: {score:.2f}).',
@@ -142,18 +164,21 @@ def store_anomaly(anomaly: dict) -> None:
 
 def _confidence(features: list[float]) -> float:
     """
-    Map IsolationForest.score_samples() output to a [0, 1] confidence value
+    Map IsolationForest.decision_function() output to a [0, 1] confidence value
     where 1.0 = maximally anomalous.
 
-    score_samples() returns lower (more negative) values for anomalies.
-    Typical range for this model: roughly [-0.5, 0.5].
-    Mapping: confidence = clip(0.5 - raw_score, 0, 1)
-      raw = -0.5  →  confidence ≈ 1.0  (very anomalous)
-      raw =  0.0  →  confidence ≈ 0.5  (borderline)
-      raw =  0.5  →  confidence ≈ 0.0  (clearly normal)
+    decision_function() is centred on the contamination boundary:
+      df > 0  → normal     (further from 0 = more clearly normal)
+      df < 0  → anomaly    (further from 0 = more clearly anomalous)
+
+    The raw magnitudes for this 3-feature model are small (≈ ±0.1), so we
+    scale by 5 to spread the confidence across [0, 1]:
+      df = +0.10  →  conf 0.0   (clearly normal)
+      df =  0.00  →  conf 0.5   (borderline)
+      df = -0.10  →  conf 1.0   (clearly anomalous)
     """
-    raw: float = _forest.score_samples([features])[0]
-    return float(np.clip(0.5 - raw, 0.0, 1.0))
+    df: float = _forest.decision_function([features])[0]
+    return float(np.clip(0.5 - df * 5, 0.0, 1.0))
 
 
 def _anomaly(

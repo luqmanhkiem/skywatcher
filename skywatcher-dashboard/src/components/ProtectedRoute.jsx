@@ -23,8 +23,7 @@ export default function ProtectedRoute({ children, roles }) {
 
   // Logged in but wrong role
   if (roles && !roles.includes(user.role)) {
-    const fallback = user.role === 'passenger' ? '/track' : '/'
-    return <Navigate to={fallback} replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   return children

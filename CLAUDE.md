@@ -9,8 +9,10 @@ IoT-enabled smart airport baggage tracking system with real-time anomaly detecti
 ## Stack
 - **IoT Simulation**: `simulator/rfid_sim.py` — Python, paho-mqtt, publishes to MQTT
 - **Message Broker**: Mosquitto on localhost:1883, topic `baggage/events`
-- **Backend**: `backend/app.py` — Flask + SQLite, REST API on port 5000
-- **ML**: `backend/models/anomaly.py` — scikit-learn Isolation Forest
+- **Backend**: `backend/app.py` — Flask, REST API on port 5000
+- **Storage**: Supabase (Postgres) — tables: `users`, `bags`, `events`, `anomalies`. Connected via `supabase-py`; config in `.env` (`SUPABASE_URL`, `SUPABASE_KEY`)
+- **Auth**: JWT (HS256), 8 h expiry — `Authorization: Bearer <token>`. Secret in `.env` (`JWT_SECRET`). Decorator: `@token_required(...roles)` in `backend/auth.py`
+- **ML**: `backend/models/anomaly.py` — scikit-learn Isolation Forest, trained at module import on per-checkpoint synthetic durations
 - **Frontend**: `skywatcher-dashboard/` — React + Vite + Recharts, port 5173
 
 ## Checkpoint flow (in strict order)
@@ -46,10 +48,21 @@ check_in → security → sorting → loading → arrival
 ```
 
 ## Key files
-- `backend/models/database.py` — SQLite schema, all DB helpers
-- `backend/models/anomaly.py` — Isolation Forest logic
-- `skywatcher-dashboard/src/utils/api.js` — all axios calls
+- `backend/models/database.py` — Supabase client + all DB helpers
+- `backend/models/anomaly.py` — Isolation Forest + rule-based detectors (STALL / WRONG_ROUTE / SECURITY_BYPASS)
+- `backend/auth.py` — JWT issue/verify + `@token_required` decorator
+- `skywatcher-dashboard/src/context/AuthContext.jsx` — token storage in `localStorage` (key `sw_token`), `/auth/me` re-hydrate on mount
+- `skywatcher-dashboard/src/utils/api.js` — axios instance, attaches `Bearer` token, redirects to `/login` on 401
 - `skywatcher-dashboard/src/hooks/usePolling.js` — 3s polling hook
+- `simulator/demo.sh` — one-bag demo recipes (normal / stall / bypass / wrong-route / mixed) wrapping `rfid_sim.py` flags
+
+## Simulator flags
+`python rfid_sim.py [flags]` — defaults to 10 bags, parallel, randomized anomalies.
+- `--bags N` — bag count
+- `--sequential` — process bags one at a time
+- `--scenario {normal,stall,wrong-route,bypass}` — force every bag's outcome
+- `--passenger NAME` / `--flight ID` — pin identifying values
+- `--speed X` — scale inter-checkpoint delay (0.3 = fast demo)
 
 ## Coding conventions
 - Python: PEP 8, type hints where useful, dotenv for all config

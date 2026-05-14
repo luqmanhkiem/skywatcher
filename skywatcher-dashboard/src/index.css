@@ -3,7 +3,7 @@
    Aesthetic: Airport Ops Center · OLED Black · Amber Radar · Glass Cockpit
    ─────────────────────────────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -13,50 +13,81 @@
 
 /* ─── Design Tokens ─────────────────────────────────────────────────────── */
 :root {
-  /* Backgrounds — OLED deep black with cockpit blue-teal tinge */
-  --bg:          #020B0F;
-  --bg-2:        #030F15;
-  --surface:     #061520;
-  --surface-2:   #0A1E2C;
-  --surface-3:   #0F2D3E;
-  --border:      #0D2333;
-  --border-2:    #163A52;
+  /* Backgrounds — warm cream, paper-like */
+  --bg:          #F1EFE9;
+  --bg-2:        #EBE9E2;
+  --surface:     #FAF9F5;
+  --surface-2:   #F1EFE9;
+  --surface-3:   #E6E4DC;
+  --border:      #E5E2D8;
+  --border-2:    #D5D2C8;
 
-  /* Text — slightly cool, LCD-screen quality */
-  --text:        #DFF0F8;
-  --text-2:      #9BBFD4;
-  --muted:       #2E5A72;
-  --muted-2:     #4B84A0;
+  /* Text — black on cream */
+  --text:        #0A0A0A;
+  --text-2:      #404040;
+  --muted:       #6B6B6B;
+  --muted-2:     #8E8E8E;
 
-  /* Amber accent — primary radar glow */
+  /* Amber accent — kept for live indicators / active states */
   --accent:      #F5A623;
-  --accent-dim:  rgba(245, 166, 35, 0.1);
+  --accent-dim:  rgba(245, 166, 35, 0.12);
   --accent-glow: rgba(245, 166, 35, 0.25);
 
-  /* Radar green — all-clear, success */
-  --success:     #00CC7D;
-  --success-dim: rgba(0, 204, 125, 0.1);
+  /* Green — all-clear, success */
+  --success:     #16A34A;
+  --success-dim: rgba(22, 163, 74, 0.12);
 
   /* Warning orange */
-  --warning:     #FF7A2F;
-  --warning-dim: rgba(255, 122, 47, 0.1);
+  --warning:     #EA580C;
+  --warning-dim: rgba(234, 88, 12, 0.12);
 
   /* Critical red */
-  --danger:      #FF3355;
-  --danger-dim:  rgba(255, 51, 85, 0.1);
+  --danger:      #DC2626;
+  --danger-dim:  rgba(220, 38, 38, 0.12);
 
   /* Classification purple */
-  --purple:      #A78BFA;
-  --purple-dim:  rgba(167, 139, 250, 0.1);
+  --purple:      #7C3AED;
+  --purple-dim:  rgba(124, 58, 237, 0.12);
 
-  /* Hot zone orange-red */
+  /* Hot zone orange */
   --pink:        #F97316;
-  --pink-dim:    rgba(249, 115, 22, 0.1);
+  --pink-dim:    rgba(249, 115, 22, 0.12);
 
-  /* Typography */
-  --font-heading: 'Rajdhani', 'Space Grotesk', sans-serif;
-  --font-body:    'Space Grotesk', system-ui, -apple-system, sans-serif;
+  /* Typography — Inter for chrome, JetBrains Mono kept for data fields */
+  --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     LIGHT THEME — bridge.surf style, used by public-facing pages
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Warm cream backgrounds */
+  --lt-bg:           #F1EFE9;
+  --lt-bg-soft:      #EBE9E2;
+  --lt-card:         #FAF9F5;
+  --lt-pill:         #E6E4DC;
+  --lt-pill-hover:   #DCD9CF;
+
+  /* Text */
+  --lt-text:         #0A0A0A;
+  --lt-text-2:       #404040;
+  --lt-muted:        #6B6B6B;
+  --lt-muted-2:      #8E8E8E;
+
+  /* Borders */
+  --lt-border:       #E5E2D8;
+  --lt-border-2:     #D5D2C8;
+  --lt-border-focus: #0A0A0A;
+
+  /* Primary CTA — indigo blue */
+  --lt-cta:          #3D5AFE;
+  --lt-cta-hover:    #2D4AEF;
+  --lt-cta-soft:     #DCE2FF;
+  --lt-cta-fg:       #FFFFFF;
+
+  /* Inter — primary typeface for the light theme */
+  --lt-font:         'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────── */
@@ -70,18 +101,7 @@ body {
   font-feature-settings: 'ss01', 'ss02';
 }
 
-/* Background grid texture — subtle ops-center grid */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(0, 204, 125, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 204, 125, 0.015) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
-}
+/* (Removed: ops-center grid texture — no longer fits the light theme) */
 
 #root {
   position: relative;
@@ -100,9 +120,9 @@ code, pre { font-family: var(--font-mono); }
 
 /* ─── Focus ──────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--lt-cta, var(--accent));
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 /* ─── Typography helpers ─────────────────────────────────────────────────── */

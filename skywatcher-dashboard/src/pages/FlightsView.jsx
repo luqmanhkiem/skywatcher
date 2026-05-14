@@ -43,7 +43,7 @@ function FlightCard({ f }) {
       transition: 'border-color 0.2s, transform 0.15s',
       cursor: 'default',
     }}
-    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)' }}
+    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)' }}
     onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)';    e.currentTarget.style.boxShadow = 'none' }}
     >
       {/* ── Flight header ──────────────────────── */}

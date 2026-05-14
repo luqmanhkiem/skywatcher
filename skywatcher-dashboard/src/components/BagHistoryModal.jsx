@@ -56,9 +56,9 @@ export default function BagHistoryModal({ tagId, passenger, flightId, onClose })
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0,
-        background: 'rgba(0, 0, 0, 0.72)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
+        background: 'rgba(15, 15, 15, 0.45)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
         zIndex: 100,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 24,
@@ -78,7 +78,7 @@ export default function BagHistoryModal({ tagId, passenger, flightId, onClose })
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 40px rgba(245,166,35,0.06)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
         }}
       >
         {/* ── Header ──────────────────────────────────────── */}

@@ -311,7 +311,7 @@ export default function LiveMap() {
           </div>
         ))}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--danger)', boxShadow: '0 0 6px rgba(255,51,85,0.6)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--danger)', boxShadow: '0 0 6px rgba(220,38,38,0.4)' }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted-2)', letterSpacing: '0.04em' }}>Anomaly</span>
         </div>
       </div>

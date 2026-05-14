@@ -1,7 +1,7 @@
 export default function PageHeader({ title, subtitle, children }) {
   return (
     <div style={{
-      padding: '18px 24px 16px',
+      padding: '22px 28px 20px',
       borderBottom: '1px solid var(--border)',
       display: 'flex',
       alignItems: 'center',
@@ -15,10 +15,9 @@ export default function PageHeader({ title, subtitle, children }) {
       <div style={{ minWidth: 0 }}>
         <h1 style={{
           fontFamily: 'var(--font-heading)',
-          fontSize: 20,
+          fontSize: 24,
           fontWeight: 700,
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
+          letterSpacing: '-0.02em',
           color: 'var(--text)',
           lineHeight: 1.1,
         }}>
@@ -26,12 +25,10 @@ export default function PageHeader({ title, subtitle, children }) {
         </h1>
         {subtitle && (
           <p style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--muted-2)',
+            fontSize: 13,
+            color: 'var(--muted)',
             marginTop: 4,
             lineHeight: 1.4,
-            letterSpacing: '0.04em',
           }}>
             {subtitle}
           </p>

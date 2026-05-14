@@ -34,10 +34,6 @@ export const fetchStats      = ()       => api.get('/stats').then(r => r.data)
 export const fetchFlights    = ()       => api.get('/flights').then(r => r.data)
 export const resolveAlert    = (id)     => api.patch(`/alerts/${id}/resolve`).then(r => r.data)
 
-// ── Passenger endpoints ──────────────────────────────────────
-export const fetchMyBag        = () => api.get('/passenger/bag').then(r => r.data)
-export const fetchMyBagHistory = () => api.get('/passenger/bag/history').then(r => r.data)
-
 // ── Auth endpoints ───────────────────────────────────────────
 export const login  = (username, password) => api.post('/auth/login', { username, password }).then(r => r.data)
 export const logout = ()                   => api.post('/auth/logout').then(r => r.data)
@@ -48,6 +44,7 @@ export const fetchUsers     = ()         => api.get('/admin/users').then(r => r.
 export const createUser     = (data)     => api.post('/admin/users', data).then(r => r.data)
 export const updateUser     = (id, data) => api.patch(`/admin/users/${id}`, data).then(r => r.data)
 export const deactivateUser = (id)       => api.patch(`/admin/users/${id}/deactivate`).then(r => r.data)
+export const injectBag      = (data)     => api.post('/admin/simulate', data).then(r => r.data)
 
 // ── Analytics endpoints ──────────────────────────────────────
 export const fetchAnomalyTrend      = () => api.get('/stats/anomaly-trend').then(r => r.data)

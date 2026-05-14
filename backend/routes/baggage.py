@@ -84,37 +84,6 @@ def flight_summaries():
 
 
 # ---------------------------------------------------------------------------
-# Passenger routes — scoped to g.user['tag_id'] only
-# ---------------------------------------------------------------------------
-
-@baggage_bp.route('/passenger/bag', methods=['GET'])
-@token_required('passenger')
-def passenger_bag():
-    """Return the single bag belonging to the logged-in passenger."""
-    tag_id = g.user.get('tag_id')
-    if not tag_id:
-        return jsonify({'error': 'No bag tag linked to this account'}), 404
-
-    bag = get_bag_by_tag(tag_id)
-    if not bag:
-        return jsonify({'error': 'Bag not found — tracking will begin once your bag is scanned'}), 404
-
-    return jsonify({'bag': bag})
-
-
-@baggage_bp.route('/passenger/bag/history', methods=['GET'])
-@token_required('passenger')
-def passenger_bag_history():
-    """Return the full checkpoint history for the passenger's own bag."""
-    tag_id = g.user.get('tag_id')
-    if not tag_id:
-        return jsonify({'error': 'No bag tag linked to this account'}), 404
-
-    events = get_bag_history(tag_id)
-    return jsonify({'tag_id': tag_id, 'events': events, 'count': len(events)})
-
-
-# ---------------------------------------------------------------------------
 # Public passenger tracking — no login required
 # ---------------------------------------------------------------------------
 
