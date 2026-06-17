@@ -10,6 +10,7 @@ from routes.baggage import baggage_bp
 from routes.alerts import alerts_bp
 from routes.auth import auth_bp
 from routes.admin import admin_bp
+from routes.feedback import feedback_bp
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
@@ -20,6 +21,7 @@ app.register_blueprint(baggage_bp, url_prefix='/api')
 app.register_blueprint(alerts_bp, url_prefix='/api')
 app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(admin_bp, url_prefix='/api')
+app.register_blueprint(feedback_bp, url_prefix='/api')
 
 
 @app.route('/api/health')

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Send, CheckCircle, AlertCircle, Radio, Zap } from 'lucide-react'
+import { Send, CheckCircle, AlertCircle, Zap } from 'lucide-react'
 
-import { useToast }   from '../context/ToastContext'
-import { injectBag }  from '../utils/api'
-import PageHeader     from '../components/PageHeader'
+import { useToast }    from '../context/ToastContext'
+import { injectBag }   from '../utils/api'
+import { useIsMobile } from '../hooks/useIsMobile'
+import PageHeader      from '../components/PageHeader'
 
 const SCENARIOS = [
   { value: 'normal',      label: 'Normal',          desc: 'Bag clears all checkpoints in order'         },
@@ -34,6 +35,7 @@ const EMPTY_FORM = () => ({
 
 export default function InjectBagView() {
   const { showToast } = useToast()
+  const isMobile = useIsMobile()
   const [form, setForm]       = useState(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError]     = useState('')
@@ -74,14 +76,20 @@ export default function InjectBagView() {
   const scenarioMeta = SCENARIOS.find(s => s.value === form.scenario)
 
   return (
-    <div className="animate-fade-up" style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <PageHeader
         title="Inject Bag"
         subtitle="Manually push a baggage tag into the live MQTT stream"
-        icon={Radio}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, marginTop: 24 }}>
+      <div className="animate-fade-up" style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+        gap: isMobile ? 14 : 22,
+        padding: isMobile ? '16px 14px 80px' : '28px 32px',
+        maxWidth: 1100,
+        margin: '0 auto',
+      }}>
 
         {/* ── FORM CARD ──────────────────────────── */}
         <form

@@ -1,5 +1,6 @@
-import { useCallback, useEffect } from 'react'
-import { X, CheckCircle2, Clock, Tag, Plane } from 'lucide-react'
+import { useCallback, useEffect, useRef } from 'react'
+import { X, CheckCircle2, Clock, Tag, Plane, Printer } from 'lucide-react'
+import { QRCodeSVG }       from 'qrcode.react'
 import { usePolling }      from '../hooks/usePolling'
 import { fetchBagHistory } from '../utils/api'
 
@@ -43,6 +44,38 @@ export default function BagHistoryModal({ tagId, passenger, flightId, onClose })
   const events = data?.events ?? []
   const visited = new Set(events.map(e => e.checkpoint))
   const lastEvent = events[events.length - 1]
+  const qrRef = useRef(null)
+
+  // Public tracking URL encoded in the QR — PublicTrack reads `flight` + `passenger`
+  const trackUrl = `${window.location.origin}/track?flight=${encodeURIComponent(flightId ?? '')}&passenger=${encodeURIComponent(passenger ?? '')}`
+
+  // Print a physical bag tag: pop a minimal window with the QR + bag details
+  function printTag() {
+    const qrSvg = qrRef.current?.innerHTML ?? ''
+    const win = window.open('', '_blank', 'width=420,height=560')
+    if (!win) return
+    win.document.write(`
+      <html>
+        <head><title>SkyWatcher bag tag — ${tagId}</title>
+        <style>
+          body { font-family: system-ui, sans-serif; text-align: center; padding: 32px; color: #111; }
+          .tag { font-family: monospace; font-size: 22px; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 4px; }
+          .meta { font-size: 14px; color: #444; margin-bottom: 20px; }
+          .brand { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #888; margin-top: 18px; }
+          svg { width: 220px; height: 220px; }
+        </style></head>
+        <body>
+          <div class="tag">${tagId}</div>
+          <div class="meta">${passenger ?? ''}${flightId ? ' &middot; ' + flightId : ''}</div>
+          ${qrSvg}
+          <div class="meta" style="margin-top:18px">Scan to track this bag</div>
+          <div class="brand">SkyWatcher</div>
+        </body>
+      </html>`)
+    win.document.close()
+    win.focus()
+    win.print()
+  }
 
   // Close on Escape key
   useEffect(() => {
@@ -210,6 +243,49 @@ export default function BagHistoryModal({ tagId, passenger, flightId, onClose })
               )
             })}
           </div>
+        </div>
+
+        {/* ── QR bag tag ───────────────────────────────────── */}
+        <div style={{
+          padding: '16px 22px',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 16,
+        }}>
+          <div ref={qrRef} style={{
+            background: '#fff',
+            padding: 8,
+            borderRadius: 8,
+            border: '1px solid var(--border)',
+            display: 'flex',
+            flexShrink: 0,
+          }}>
+            <QRCodeSVG value={trackUrl} size={72} level="M" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+              Passenger bag tag
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--muted-2)', lineHeight: 1.4 }}>
+              Scan to open live tracking for this bag — no login needed.
+            </div>
+          </div>
+          <button
+            onClick={printTag}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'transparent',
+              border: '1px solid var(--border-2)',
+              borderRadius: 8,
+              padding: '8px 14px',
+              fontSize: 12, fontWeight: 600,
+              color: 'var(--text-2)',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-body)',
+              flexShrink: 0,
+            }}
+          >
+            <Printer size={13} /> Print tag
+          </button>
         </div>
 
         {/* ── Event timeline ───────────────────────────────── */}

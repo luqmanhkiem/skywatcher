@@ -405,6 +405,32 @@ export default function PublicTrack() {
                 })}
               </div>
             </div>
+
+            {/* Report an issue */}
+            <div style={{
+              marginTop: 16,
+              background: 'var(--lt-card)',
+              border: '1px solid var(--lt-border)',
+              borderRadius: 16,
+              padding: '18px 24px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 16, flexWrap: 'wrap',
+            }}>
+              <div style={{ fontSize: 14, color: 'var(--lt-text-2)' }}>
+                Problem with this bag — lost, delayed, or damaged?
+              </div>
+              <Link
+                to={`/feedback?flight=${encodeURIComponent(bag.flight_id ?? '')}&passenger=${encodeURIComponent(bag.passenger ?? '')}&tag=${encodeURIComponent(bag.tag_id ?? '')}`}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'var(--lt-cta)', color: 'var(--lt-cta-fg)',
+                  padding: '10px 18px', borderRadius: 999,
+                  fontWeight: 600, fontSize: 14, textDecoration: 'none', whiteSpace: 'nowrap',
+                }}
+              >
+                Report an issue <ArrowRight size={15} strokeWidth={2.5} />
+              </Link>
+            </div>
           </>
         )}
       </div>

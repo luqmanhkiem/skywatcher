@@ -4,7 +4,7 @@ JWT authentication decorator for SkyWatcher.
 Usage:
     @token_required('admin', 'ground_staff')
     def my_route():
-        # g.user = { 'sub': 1, 'username': '...', 'role': '...', 'checkpoint': '...' }
+        # g.user = { 'sub': 1, 'username': '...', 'role': '...' }
         ...
 
 Passing no roles allows any authenticated user:
@@ -60,12 +60,11 @@ def make_token(user: dict) -> str:
 
     expiry_hours = int(os.getenv('JWT_EXPIRY_HOURS', 8))
     payload = {
-        'sub':        str(user['id']),
-        'username':   user['username'],
-        'role':       user['role'],
-        'checkpoint': user.get('checkpoint'),
-        'flight_id':  user.get('flight_id'),
-        'tag_id':     user.get('tag_id'),
-        'exp':        datetime.datetime.utcnow() + datetime.timedelta(hours=expiry_hours),
+        'sub':       str(user['id']),
+        'username':  user['username'],
+        'role':      user['role'],
+        'flight_id': user.get('flight_id'),
+        'tag_id':    user.get('tag_id'),
+        'exp':       datetime.datetime.utcnow() + datetime.timedelta(hours=expiry_hours),
     }
     return jwt.encode(payload, SECRET, algorithm=ALGO)

@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
+import { useSearchParams }  from 'react-router-dom'
 import { Search, ChevronRight, Inbox } from 'lucide-react'
 import { usePolling }       from '../hooks/usePolling'
+import { useIsMobile }      from '../hooks/useIsMobile'
 import { fetchBags }        from '../utils/api'
 import PageHeader           from '../components/PageHeader'
 import StatusBadge          from '../components/StatusBadge'
@@ -66,8 +68,10 @@ function SkeletonRow() {
 }
 
 export default function BagTable() {
-  const [query, setQuery]     = useState('')
+  const [params] = useSearchParams()
+  const [query, setQuery]     = useState(params.get('tag') ?? '')
   const [selected, setSelected] = useState(null)
+  const isMobile = useIsMobile()
   const fn = useCallback(() => fetchBags(), [])
   const { data, loading, error } = usePolling(fn, 3000)
 
@@ -133,7 +137,66 @@ export default function BagTable() {
         </div>
       )}
 
-      {/* ── Table ─────────────────────────────────────────── */}
+      {/* ── Mobile card list ──────────────────────────────── */}
+      {isMobile && (
+        <div style={{ padding: '14px 14px 80px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {loading && [1,2,3].map(i => (
+            <div key={i} style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 12, padding: 16, height: 88,
+              opacity: 0.5,
+            }} />
+          ))}
+          {!loading && bags.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--muted)' }}>
+              <Inbox size={32} style={{ marginBottom: 12, opacity: 0.4 }} />
+              <p style={{ fontSize: 14 }}>
+                {query ? `No bags match "${query}"` : 'No bags yet — start the simulator.'}
+              </p>
+            </div>
+          )}
+          {bags.map(bag => {
+            const cpColor = CP_COLORS[bag.last_checkpoint] ?? 'var(--muted)'
+            return (
+              <div
+                key={bag.tag_id}
+                onClick={() => setSelected(bag)}
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderLeft: `3px solid ${cpColor}`,
+                  borderRadius: 12,
+                  padding: 14,
+                  cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', gap: 8,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 13, color: 'var(--accent)' }}>
+                    {bag.tag_id}
+                  </span>
+                  <StatusBadge label={bag.status} />
+                </div>
+                <div style={{ fontSize: 14, color: 'var(--text)', fontWeight: 500 }}>{bag.passenger}</div>
+                <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--muted)', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>✈ {bag.flight_id}</span>
+                  <span style={{ color: cpColor, fontWeight: 600 }}>{CP_LABELS[bag.last_checkpoint] ?? bag.last_checkpoint}</span>
+                  <span>{timeAgo(bag.last_seen)}</span>
+                </div>
+              </div>
+            )
+          })}
+          {!loading && bags.length > 0 && (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)', textAlign: 'center', letterSpacing: '0.06em', textTransform: 'uppercase', padding: '12px 0' }}>
+              {bags.length}/{data?.count ?? bags.length} records
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Desktop table ─────────────────────────────────── */}
+      {!isMobile && (
       <div style={{ padding: '20px 24px' }}>
         <div style={{
           background: 'var(--surface)',
@@ -254,6 +317,7 @@ export default function BagTable() {
           </div>
         )}
       </div>
+      )}
 
       {/* ── Bag History Modal ─────────────────────────────── */}
       {selected && (

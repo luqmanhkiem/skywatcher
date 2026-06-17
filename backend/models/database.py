@@ -106,12 +106,9 @@ def seed_users():
         return
 
     accounts = [
-        {'username': 'admin',          'password_hash': generate_password_hash(method='pbkdf2:sha256', password='admin123'), 'role': 'admin',        'checkpoint': None,       'flight_id': None,    'tag_id': None},
-        {'username': 'staff_checkin',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'check_in', 'flight_id': None,    'tag_id': None},
-        {'username': 'staff_security', 'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'security', 'flight_id': None,    'tag_id': None},
-        {'username': 'staff_sorting',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'sorting',  'flight_id': None,    'tag_id': None},
-        {'username': 'staff_loading',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'loading',  'flight_id': None,    'tag_id': None},
-        {'username': 'staff_arrival',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': 'arrival',  'flight_id': None,    'tag_id': None},
+        {'username': 'admin',  'password_hash': generate_password_hash(method='pbkdf2:sha256', password='admin123'), 'role': 'admin',        'checkpoint': None, 'email': None, 'flight_id': None, 'tag_id': None},
+        {'username': 'staff1', 'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': None, 'email': None, 'flight_id': None, 'tag_id': None},
+        {'username': 'staff2', 'password_hash': generate_password_hash(method='pbkdf2:sha256', password='staff123'), 'role': 'ground_staff', 'checkpoint': None, 'email': None, 'flight_id': None, 'tag_id': None},
     ]
 
     db.table('users').insert(accounts).execute()
@@ -163,7 +160,7 @@ def get_bag_by_passenger(flight_id: str, passenger: str):
 def get_all_users() -> list:
     db   = get_db()
     resp = (db.table('users')
-              .select('id, username, role, checkpoint, flight_id, tag_id, active, created_at')
+              .select('id, username, role, email, flight_id, tag_id, active, created_at')
               .order('id')
               .execute())
     return resp.data or []
@@ -172,7 +169,8 @@ def get_all_users() -> list:
 def create_user(username: str, password: str, role: str,
                 checkpoint: Optional[str] = None,
                 flight_id: Optional[str] = None,
-                tag_id: Optional[str] = None) -> dict:
+                tag_id: Optional[str] = None,
+                email: Optional[str] = None) -> dict:
     pw_hash = generate_password_hash(method='pbkdf2:sha256', password=password)
     db      = get_db()
     resp    = db.table('users').insert({
@@ -180,6 +178,7 @@ def create_user(username: str, password: str, role: str,
         'password_hash': pw_hash,
         'role':          role,
         'checkpoint':    checkpoint,
+        'email':         email,
         'flight_id':     flight_id,
         'tag_id':        tag_id,
     }).execute()
@@ -188,8 +187,23 @@ def create_user(username: str, password: str, role: str,
     return row
 
 
+def get_alert_recipient_emails() -> list:
+    """
+    Emails of all active admin / ground_staff accounts that have an email set.
+    Used by the notifier to address critical-anomaly alerts to real staff.
+    """
+    db   = get_db()
+    resp = (db.table('users')
+              .select('email')
+              .eq('active', 1)   # `active` is an integer flag (0/1), not a boolean
+              .in_('role', ['admin', 'ground_staff'])
+              .execute())
+    return [r['email'].strip() for r in (resp.data or [])
+            if r.get('email') and r['email'].strip()]
+
+
 def update_user(user_id: int, fields: dict) -> Optional[dict]:
-    allowed = {'username', 'role', 'checkpoint', 'flight_id', 'tag_id'}
+    allowed = {'username', 'role', 'email', 'flight_id', 'tag_id'}
     updates = {}
     for k, v in fields.items():
         if k == 'password' and v:
@@ -270,4 +284,44 @@ def resolve_alert(alert_id: int) -> Optional[dict]:
         'resolved':    1,
         'resolved_at': datetime.now(timezone.utc).isoformat(),
     }).eq('id', alert_id).execute()
+    return resp.data[0] if resp.data else None
+
+
+# ── Customer feedback ────────────────────────────────────────────────────────
+
+def insert_feedback(payload: dict) -> dict:
+    """Insert a passenger-submitted feedback / issue report. Returns the new row."""
+    db   = get_db()
+    resp = db.table('feedback').insert({
+        'name':       payload.get('name'),
+        'email':      payload.get('email'),
+        'flight_id':  payload.get('flight_id'),
+        'tag_id':     payload.get('tag_id'),
+        'category':   payload.get('category'),
+        'message':    payload.get('message'),
+        'status':     'new',
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    }).execute()
+    return resp.data[0] if resp.data else {}
+
+
+def get_feedback(limit: int = 100) -> list:
+    db   = get_db()
+    resp = (db.table('feedback').select('*')
+              .order('created_at', desc=True)
+              .limit(limit)
+              .execute())
+    return resp.data or []
+
+
+def update_feedback(feedback_id: int, fields: dict) -> Optional[dict]:
+    """Update status / staff_notes / resolved_by on a feedback ticket."""
+    allowed = {'status', 'staff_notes', 'resolved_by'}
+    updates = {k: v for k, v in fields.items() if k in allowed}
+    if not updates:
+        return None
+    updates['updated_at'] = datetime.now(timezone.utc).isoformat()
+
+    db   = get_db()
+    resp = db.table('feedback').update(updates).eq('id', feedback_id).execute()
     return resp.data[0] if resp.data else None

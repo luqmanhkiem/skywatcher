@@ -31,7 +31,7 @@ if [ -f "$PIDS" ]; then
 fi
 
 # ── Kill leftover processes on used ports ─────────────────────────────────────
-for PORT in 5000 5173; do
+for PORT in 5001 5173; do
   PID_ON_PORT=$(lsof -ti tcp:$PORT 2>/dev/null || true)
   if [ -n "$PID_ON_PORT" ]; then
     warn "Port $PORT in use (PID $PID_ON_PORT) — killing..."
@@ -64,7 +64,7 @@ if ! kill -0 $BACKEND_PID 2>/dev/null; then
   kill $MQTT_PID 2>/dev/null || true
   exit 1
 fi
-log "  Flask API running    (PID $BACKEND_PID)  →  http://localhost:5000"
+log "  Flask API running    (PID $BACKEND_PID)  →  http://localhost:5001"
 
 # ── 3. React Frontend ─────────────────────────────────────────────────────────
 log "Starting React frontend..."

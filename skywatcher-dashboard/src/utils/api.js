@@ -56,4 +56,9 @@ export const fetchCheckpointHeatmap = () => api.get('/stats/checkpoint-heatmap')
 export const trackBag = (flightId, passenger) =>
   api.get(`/track?flight_id=${encodeURIComponent(flightId)}&passenger=${encodeURIComponent(passenger)}`).then(r => r.data)
 
+// ── Customer feedback ────────────────────────────────────────
+export const submitFeedback = (data)         => api.post('/feedback', data).then(r => r.data)        // public
+export const fetchFeedback  = (limit = 100)  => api.get(`/feedback?limit=${limit}`).then(r => r.data) // staff/admin
+export const updateFeedback = (id, data)     => api.patch(`/feedback/${id}`, data).then(r => r.data)  // staff/admin
+
 export default api

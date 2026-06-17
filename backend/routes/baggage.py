@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, g
+from flask import Blueprint, jsonify, request
 
 from auth import token_required
 from models.anomaly import detect_anomaly, store_anomaly
@@ -48,12 +48,9 @@ def ingest_event():
 def list_bags():
     """
     Return all bags with current status and last checkpoint.
-    Ground staff only see bags currently at their assigned checkpoint.
+    Staff are uniform — all roles see every bag (no per-checkpoint filter).
     """
     bags = get_all_bags()
-    if g.user['role'] == 'ground_staff':
-        cp = g.user.get('checkpoint')
-        bags = [b for b in bags if b.get('last_checkpoint') == cp]
     return jsonify({'bags': bags, 'count': len(bags)})
 
 

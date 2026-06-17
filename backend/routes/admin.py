@@ -16,13 +16,12 @@ from models.database import (
 
 # Make the simulator package importable so the dashboard can inject bags
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'simulator'))
-from rfid_sim import simulate_one_bag, SCENARIO_TO_ANOMALY  # noqa: E402
+from rfid_sim import simulate_one_bag  # noqa: E402
 
 admin_bp = Blueprint('admin', __name__)
 
 VALID_ROLES = {'admin', 'ground_staff'}
-VALID_CHECKPOINTS = {'check_in', 'security', 'sorting', 'loading', 'arrival'}
-VALID_SCENARIOS = set(SCENARIO_TO_ANOMALY.keys())
+VALID_SCENARIOS = {'normal', 'stall', 'wrong-route', 'bypass'}
 
 
 @admin_bp.route('/admin/users', methods=['GET'])
@@ -38,12 +37,12 @@ def add_user():
     """Create a new user account."""
     data = request.get_json(silent=True) or {}
 
-    username   = (data.get('username') or '').strip()
-    password   = data.get('password', '')
-    role       = data.get('role', '')
-    checkpoint = data.get('checkpoint') or None
-    flight_id  = (data.get('flight_id') or '').strip() or None
-    tag_id     = (data.get('tag_id') or '').strip() or None
+    username  = (data.get('username') or '').strip()
+    password  = data.get('password', '')
+    role      = data.get('role', '')
+    email     = (data.get('email') or '').strip() or None
+    flight_id = (data.get('flight_id') or '').strip() or None
+    tag_id    = (data.get('tag_id') or '').strip() or None
 
     if not username:
         return jsonify({'error': 'username is required'}), 400
@@ -51,15 +50,16 @@ def add_user():
         return jsonify({'error': 'password must be at least 6 characters'}), 400
     if role not in VALID_ROLES:
         return jsonify({'error': f'role must be one of {sorted(VALID_ROLES)}'}), 400
-    if role == 'ground_staff' and checkpoint and checkpoint not in VALID_CHECKPOINTS:
-        return jsonify({'error': f'checkpoint must be one of {sorted(VALID_CHECKPOINTS)}'}), 400
+    if email and '@' not in email:
+        return jsonify({'error': 'email looks invalid'}), 400
 
     try:
         user = create_user(
             username=username,
             password=password,
             role=role,
-            checkpoint=checkpoint,
+            checkpoint=None,
+            email=email,
             flight_id=flight_id,
             tag_id=tag_id,
         )

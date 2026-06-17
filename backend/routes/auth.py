@@ -31,7 +31,7 @@ def login():
     """
     POST /api/auth/login
     Body: { "username": "...", "password": "..." }
-    Returns: { "token": "...", "user": { username, role, checkpoint, flight_id, tag_id } }
+    Returns: { "token": "...", "user": { username, role, flight_id, tag_id } }
     """
     body = request.get_json(silent=True) or {}
     username = body.get('username', '').strip()
@@ -53,12 +53,11 @@ def login():
     return jsonify({
         'token': token,
         'user': {
-            'id':         user['id'],
-            'username':   user['username'],
-            'role':       user['role'],
-            'checkpoint': user.get('checkpoint'),
-            'flight_id':  user.get('flight_id'),
-            'tag_id':     user.get('tag_id'),
+            'id':        user['id'],
+            'username':  user['username'],
+            'role':      user['role'],
+            'flight_id': user.get('flight_id'),
+            'tag_id':    user.get('tag_id'),
         },
     })
 
@@ -73,12 +72,11 @@ def me():
     """
     return jsonify({
         'user': {
-            'id':         g.user.get('sub'),
-            'username':   g.user.get('username'),
-            'role':       g.user.get('role'),
-            'checkpoint': g.user.get('checkpoint'),
-            'flight_id':  g.user.get('flight_id'),
-            'tag_id':     g.user.get('tag_id'),
+            'id':        g.user.get('sub'),
+            'username':  g.user.get('username'),
+            'role':      g.user.get('role'),
+            'flight_id': g.user.get('flight_id'),
+            'tag_id':    g.user.get('tag_id'),
         }
     })
 

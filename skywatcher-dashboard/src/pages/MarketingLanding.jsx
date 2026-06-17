@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Radar, Bell, Plane } from 'lucide-react'
+import { ArrowRight, Radar, Bell, Plane, Menu, X } from 'lucide-react'
+
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const SAMPLE_BUBBLES = [
   "Where's my bag from MH370?",
@@ -46,8 +48,10 @@ function useTypewriter(strings) {
 
 export default function MarketingLanding() {
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
   const [flight,   setFlight]   = useState('')
   const [passenger, setPassenger] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
   const bubble = useTypewriter(SAMPLE_BUBBLES)
 
   function handleTrack(e) {
@@ -68,10 +72,12 @@ export default function MarketingLanding() {
       <header style={{
         maxWidth: 1200,
         margin: '0 auto',
-        padding: '24px 32px',
+        padding: isMobile ? '16px 18px' : '24px 32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        position: 'relative',
+        zIndex: 50,
       }}>
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
           <div style={{
@@ -84,20 +90,95 @@ export default function MarketingLanding() {
           <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.01em' }}>SkyWatcher</span>
         </Link>
 
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
-          <a href="#track"       style={navLink}>Track</a>
-          <a href="#how-it-works" style={navLink}>How it works</a>
-          <a href="#for-airlines" style={navLink}>For airlines</a>
-        </nav>
+        {/* Desktop nav */}
+        {!isMobile && (
+          <>
+            <nav style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
+              <a href="#track"       style={navLink}>Track</a>
+              <a href="#how-it-works" style={navLink}>How it works</a>
+              <a href="#for-airlines" style={navLink}>For airlines</a>
+              <Link to="/feedback" style={navLink}>Contact</Link>
+            </nav>
+            <Link to="/login" style={ctaPill}>Staff sign in</Link>
+          </>
+        )}
 
-        <Link to="/login" style={ctaPill}>Staff sign in</Link>
+        {/* Mobile hamburger */}
+        {isMobile && (
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            style={{
+              width: 40, height: 40,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: menuOpen ? 'var(--lt-text)' : 'var(--lt-pill)',
+              color: menuOpen ? 'var(--lt-bg)' : 'var(--lt-text)',
+              border: 'none',
+              borderRadius: 10,
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        )}
       </header>
+
+      {/* Mobile menu drawer (overlay) */}
+      {isMobile && menuOpen && (
+        <>
+          <div
+            onClick={() => setMenuOpen(false)}
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(0,0,0,0.3)',
+              zIndex: 30,
+            }}
+          />
+          <nav style={{
+            position: 'fixed',
+            top: 70,
+            left: 14, right: 14,
+            zIndex: 40,
+            background: 'var(--lt-card)',
+            border: '1px solid var(--lt-border)',
+            borderRadius: 16,
+            padding: 10,
+            boxShadow: '0 18px 40px rgba(0,0,0,0.10)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}>
+            <a href="#track"        onClick={() => setMenuOpen(false)} style={mobileMenuItem}>Track</a>
+            <a href="#how-it-works" onClick={() => setMenuOpen(false)} style={mobileMenuItem}>How it works</a>
+            <a href="#for-airlines" onClick={() => setMenuOpen(false)} style={mobileMenuItem}>For airlines</a>
+            <Link to="/feedback"    onClick={() => setMenuOpen(false)} style={mobileMenuItem}>Contact</Link>
+            <div style={{ height: 1, background: 'var(--lt-border)', margin: '6px 4px' }} />
+            <Link
+              to="/login"
+              onClick={() => setMenuOpen(false)}
+              style={{
+                ...mobileMenuItem,
+                background: 'var(--lt-cta)',
+                color: 'var(--lt-cta-fg)',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <span>Staff sign in</span>
+              <ArrowRight size={16} strokeWidth={2.5} />
+            </Link>
+          </nav>
+        </>
+      )}
 
       {/* ──── HERO ──── */}
       <section style={{
         maxWidth: 1100,
         margin: '0 auto',
-        padding: '64px 32px 96px',
+        padding: isMobile ? '32px 18px 56px' : '64px 32px 96px',
         textAlign: 'center',
       }}>
         {/* Speech bubble — typewriter effect */}
@@ -147,7 +228,7 @@ export default function MarketingLanding() {
 
         {/* Headline */}
         <h1 style={{
-          fontSize: 'clamp(48px, 8vw, 112px)',
+          fontSize: 'clamp(44px, 11vw, 112px)',
           fontWeight: 900,
           letterSpacing: '-0.04em',
           lineHeight: 0.95,
@@ -158,10 +239,10 @@ export default function MarketingLanding() {
         </h1>
 
         <p style={{
-          fontSize: 19,
+          fontSize: isMobile ? 16 : 19,
           color: 'var(--lt-text-2)',
           maxWidth: 640,
-          margin: '0 auto 44px',
+          margin: isMobile ? '0 auto 28px' : '0 auto 44px',
           lineHeight: 1.45,
           fontWeight: 400,
         }}>
@@ -176,18 +257,22 @@ export default function MarketingLanding() {
           style={{
             background: 'var(--lt-card)',
             border: '1px solid var(--lt-border)',
-            borderRadius: 20,
-            padding: 10,
+            borderRadius: isMobile ? 16 : 20,
+            padding: isMobile ? 12 : 10,
             display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
             alignItems: 'stretch',
-            gap: 10,
+            gap: isMobile ? 6 : 10,
             maxWidth: 720,
             margin: '0 auto',
             boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
           }}
         >
           <FormField label="Flight" value={flight} onChange={setFlight} placeholder="MH370" />
-          <div style={{ width: 1, background: 'var(--lt-border)', margin: '6px 0' }} />
+          <div style={{
+            ...(isMobile ? { height: 1, width: '100%', margin: '2px 0' } : { width: 1, margin: '6px 0' }),
+            background: 'var(--lt-border)',
+          }} />
           <FormField label="Passenger" value={passenger} onChange={setPassenger} placeholder="Tan" />
 
           <button
@@ -196,6 +281,9 @@ export default function MarketingLanding() {
             style={{
               ...ctaButton,
               opacity: (!flight.trim() || !passenger.trim()) ? 0.45 : 1,
+              padding: isMobile ? '14px 24px' : '0 24px',
+              marginTop: isMobile ? 4 : 0,
+              justifyContent: 'center',
             }}
           >
             Track bag <ArrowRight size={18} strokeWidth={2.5} />
@@ -207,17 +295,21 @@ export default function MarketingLanding() {
       <section id="how-it-works" style={{
         maxWidth: 1100,
         margin: '0 auto',
-        padding: '96px 32px',
+        padding: isMobile ? '56px 18px' : '96px 32px',
         borderTop: '1px solid var(--lt-border)',
       }}>
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? 36 : 64 }}>
           <div style={pillLabel}>How it works</div>
           <h2 style={sectionHeading}>
             Every bag, every checkpoint,<br/>real-time updates.
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: isMobile ? 14 : 32,
+        }}>
           <Feature
             num="01"
             icon={Radar}
@@ -243,13 +335,13 @@ export default function MarketingLanding() {
       <section id="for-airlines" style={{
         maxWidth: 1100,
         margin: '0 auto',
-        padding: '0 32px 96px',
+        padding: isMobile ? '0 18px 56px' : '0 32px 96px',
       }}>
         <div style={{
           background: 'var(--lt-text)',
           color: 'var(--lt-bg)',
-          borderRadius: 24,
-          padding: '72px 64px',
+          borderRadius: isMobile ? 18 : 24,
+          padding: isMobile ? '44px 24px' : '72px 64px',
           textAlign: 'center',
         }}>
           <div style={{
@@ -307,15 +399,22 @@ export default function MarketingLanding() {
       <footer style={{
         maxWidth: 1200,
         margin: '0 auto',
-        padding: '40px 32px',
+        padding: isMobile ? '28px 18px 44px' : '40px 32px',
         borderTop: '1px solid var(--lt-border)',
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        fontSize: 13,
+        alignItems: isMobile ? 'flex-start' : 'center',
+        gap: isMobile ? 6 : 0,
+        fontSize: isMobile ? 12 : 13,
         color: 'var(--lt-muted)',
       }}>
-        <div>SkyWatcher — Real-time baggage tracking</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <span>SkyWatcher — Real-time baggage tracking</span>
+          <Link to="/feedback" style={{ color: 'var(--lt-text-2)', textDecoration: 'none', fontWeight: 500 }}>
+            Report an issue
+          </Link>
+        </div>
         <div>PSM 2025/2026 · UTeM FTMK · B032310853</div>
       </footer>
     </div>
@@ -402,6 +501,16 @@ const navLink = {
   fontWeight: 500,
   color: 'var(--lt-text)',
   textDecoration: 'none',
+}
+
+const mobileMenuItem = {
+  display: 'block',
+  padding: '14px 16px',
+  fontSize: 15,
+  fontWeight: 500,
+  color: 'var(--lt-text)',
+  textDecoration: 'none',
+  borderRadius: 10,
 }
 
 const ctaPill = {

@@ -1,6 +1,8 @@
-import { Routes, Route, NavLink, Navigate } from 'react-router-dom'
-import { Activity, Luggage, Bell, BarChart2, Plane, Radio, LogOut, User, Users, Wifi, WifiOff, Send } from 'lucide-react'
-import { useCallback, useEffect, useRef } from 'react'
+import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
+import { Activity, Luggage, Bell, BarChart2, Plane, Radio, LogOut, User, Users, MessageSquare, Menu, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { useIsMobile }  from './hooks/useIsMobile'
 
 import { useAuth }       from './context/AuthContext'
 import { useToast }      from './context/ToastContext'
@@ -13,10 +15,12 @@ import StatsView         from './pages/StatsView'
 import FlightsView       from './pages/FlightsView'
 import UsersView         from './pages/UsersView'
 import InjectBagView     from './pages/InjectBagView'
+import FeedbackInbox     from './pages/FeedbackInbox'
 import PublicTrack       from './pages/PublicTrack'
 import MarketingLanding  from './pages/MarketingLanding'
+import FeedbackPage      from './pages/FeedbackPage'
 import { usePolling }    from './hooks/usePolling'
-import { fetchAlerts }   from './utils/api'
+import { fetchAlerts, fetchFeedback } from './utils/api'
 
 // Nav items per role
 const NAV_ADMIN = [
@@ -25,14 +29,16 @@ const NAV_ADMIN = [
   { to: '/alerts',    icon: Bell,      label: 'Alerts'    },
   { to: '/stats',     icon: BarChart2, label: 'Analytics' },
   { to: '/flights',   icon: Plane,     label: 'Flights'   },
-  { to: '/inject',    icon: Send,      label: 'Inject Bag' },
-  { to: '/users',     icon: Users,     label: 'Users'     },
+  { to: '/inject',    icon: Radio,         label: 'Inject Bag' },
+  { to: '/support',   icon: MessageSquare, label: 'Support'   },
+  { to: '/users',     icon: Users,         label: 'Users'     },
 ]
 
 const NAV_STAFF = [
-  { to: '/dashboard', icon: Activity, label: 'Live Map' },
-  { to: '/bags',      icon: Luggage,  label: 'Bags'     },
-  { to: '/alerts',    icon: Bell,     label: 'Alerts'   },
+  { to: '/dashboard', icon: Activity,      label: 'Live Map' },
+  { to: '/bags',      icon: Luggage,       label: 'Bags'     },
+  { to: '/alerts',    icon: Bell,          label: 'Alerts'   },
+  { to: '/support',   icon: MessageSquare, label: 'Support'  },
 ]
 
 const ROLE_BADGE_STYLE = {
@@ -45,21 +51,84 @@ const ROLE_LABELS = {
   ground_staff: 'Ground Staff',
 }
 
-function Sidebar({ unresolved, error }) {
+const navBadge = {
+  background: 'var(--danger)',
+  color: '#fff',
+  fontFamily: 'var(--font-mono)',
+  fontSize: 9, fontWeight: 700,
+  borderRadius: 10,
+  padding: '1px 6px',
+  minWidth: 18,
+  textAlign: 'center',
+  lineHeight: '16px',
+}
+
+function Sidebar({ unresolved, newFeedback, error, isMobile, drawerOpen, onClose }) {
   const { user, logout, isRole } = useAuth()
   const nav = isRole('admin') ? NAV_ADMIN : NAV_STAFF
   const roleStyle = ROLE_BADGE_STYLE[user?.role] ?? ROLE_BADGE_STYLE.admin
 
+  // Mobile: fixed-position drawer that slides in from the left.
+  // Desktop: regular flex item, always visible.
+  const asideStyle = isMobile
+    ? {
+        position: 'fixed',
+        top: 0, left: 0, bottom: 0,
+        width: 260,
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 200,
+        transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.22s ease',
+        boxShadow: drawerOpen ? '0 0 30px rgba(0,0,0,0.18)' : 'none',
+      }
+    : {
+        width: 220,
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        display: 'flex',
+        flexDirection: 'column',
+        flexShrink: 0,
+        position: 'relative',
+      }
+
   return (
-    <aside style={{
-      width: 220,
-      background: 'var(--surface)',
-      borderRight: '1px solid var(--border)',
-      display: 'flex',
-      flexDirection: 'column',
-      flexShrink: 0,
-      position: 'relative',
-    }}>
+    <>
+      {/* Backdrop overlay — only on mobile when drawer is open */}
+      {isMobile && drawerOpen && (
+        <div
+          onClick={onClose}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.4)',
+            zIndex: 199,
+            backdropFilter: 'blur(2px)',
+          }}
+        />
+      )}
+
+      <aside style={asideStyle}>
+      {isMobile && (
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 14, right: 14,
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            width: 32, height: 32,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-2)',
+            cursor: 'pointer',
+            zIndex: 1,
+          }}
+          aria-label="Close menu"
+        >
+          <X size={16} />
+        </button>
+      )}
       {/* Logo */}
       <div style={{ padding: '22px 18px 18px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
@@ -139,18 +208,13 @@ function Sidebar({ unresolved, error }) {
             <Icon size={15} strokeWidth={1.75} />
             <span style={{ flex: 1 }}>{label}</span>
             {label === 'Alerts' && unresolved > 0 && (
-              <span style={{
-                background: 'var(--danger)',
-                color: '#fff',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 9, fontWeight: 700,
-                borderRadius: 10,
-                padding: '1px 6px',
-                minWidth: 18,
-                textAlign: 'center',
-                lineHeight: '16px',
-              }}>
+              <span style={navBadge}>
                 {unresolved > 99 ? '99+' : unresolved}
+              </span>
+            )}
+            {label === 'Support' && newFeedback > 0 && (
+              <span style={navBadge}>
+                {newFeedback > 99 ? '99+' : newFeedback}
               </span>
             )}
           </NavLink>
@@ -180,7 +244,7 @@ function Sidebar({ unresolved, error }) {
                 {user?.username}
               </div>
               <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 1 }}>
-                {user?.checkpoint ? user.checkpoint.replace('_', ' ') : ROLE_LABELS[user?.role]}
+                {ROLE_LABELS[user?.role]}
               </div>
             </div>
           </div>
@@ -227,6 +291,7 @@ function Sidebar({ unresolved, error }) {
         </div>
       </div>
     </aside>
+    </>
   )
 }
 
@@ -234,8 +299,22 @@ function StaffLayout() {
   const fetchFn = useCallback(() => fetchAlerts(100), [])
   const { data: alertData, error } = usePolling(fetchFn, 3000)
   const unresolved = alertData?.unresolved ?? 0
+
+  const feedbackFn = useCallback(() => fetchFeedback(200), [])
+  const { data: feedbackData } = usePolling(feedbackFn, 5000)
+  const newFeedback = feedbackData?.counts?.new ?? 0
+
   const { showToast } = useToast()
   const seenAlertIds = useRef(null)
+
+  const isMobile = useIsMobile()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const location = useLocation()
+
+  // Close drawer whenever the user navigates (tapping a nav link)
+  useEffect(() => {
+    setDrawerOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     if (!alertData) return
@@ -254,8 +333,54 @@ function StaffLayout() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <Sidebar unresolved={unresolved} error={error} />
-      <main style={{ flex: 1, overflow: 'auto', background: 'var(--bg)' }}>
+      <Sidebar
+        unresolved={unresolved}
+        newFeedback={newFeedback}
+        error={error}
+        isMobile={isMobile}
+        drawerOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
+      <main style={{ flex: 1, overflow: 'auto', background: 'var(--bg)', position: 'relative' }}>
+        {/* Mobile hamburger */}
+        {isMobile && (
+          <button
+            onClick={() => setDrawerOpen(true)}
+            style={{
+              position: 'fixed',
+              top: 12, left: 12,
+              zIndex: 50,
+              width: 38, height: 38,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-2)',
+              borderRadius: 10,
+              color: 'var(--text)',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+            aria-label="Open menu"
+          >
+            <Menu size={18} />
+            {unresolved > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: -4, right: -4,
+                background: 'var(--danger)',
+                color: '#fff',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9, fontWeight: 700,
+                borderRadius: 10,
+                padding: '1px 5px',
+                minWidth: 16,
+                textAlign: 'center',
+                lineHeight: '14px',
+              }}>
+                {unresolved > 99 ? '99+' : unresolved}
+              </span>
+            )}
+          </button>
+        )}
         <Routes>
           <Route path="/dashboard" element={<LiveMap />}     />
           <Route path="/bags"      element={<BagTable />}    />
@@ -280,6 +405,7 @@ function StaffLayout() {
               <InjectBagView />
             </ProtectedRoute>
           } />
+          <Route path="/support" element={<FeedbackInbox />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
@@ -300,6 +426,9 @@ export default function App() {
 
       {/* Public passenger tracking — no login required */}
       <Route path="/track" element={<PublicTrack />} />
+
+      {/* Public feedback / issue reporting — no login required */}
+      <Route path="/feedback" element={<FeedbackPage />} />
 
       {/* Staff sign in */}
       <Route path="/login" element={
