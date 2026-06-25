@@ -15,7 +15,7 @@ const ROLE_STYLE = {
   ground_staff: { bg: 'rgba(0,204,125,0.12)',   color: '#00CC7D', label: 'Ground Staff' },
 }
 
-const EMPTY_FORM = { username: '', password: '', role: 'ground_staff', email: '' }
+const EMPTY_FORM = { username: '', name: '', password: '', role: 'ground_staff', email: '' }
 
 function RoleChip({ role }) {
   const s = ROLE_STYLE[role] ?? { bg: 'var(--surface-3)', color: 'var(--muted-2)', label: role }
@@ -34,7 +34,8 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       background: 'rgba(15,15,15,0.45)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      overflowY: 'auto', padding: '40px 16px',
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: 'var(--surface)',
@@ -44,9 +45,9 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
         padding: '28px 28px 24px',
         width: '100%',
         maxWidth: 440,
-        margin: '0 16px',
-        maxHeight: '90vh',
+        maxHeight: 'calc(100vh - 80px)',
         overflowY: 'auto',
+        flexShrink: 0,
         boxShadow: '0 24px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
       }}>
         <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--text)', marginBottom: 22 }}>{title}</h2>
@@ -60,6 +61,15 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <Field label="Display Name">
+            <input
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Ahmad Luqman"
+              style={inputStyle}
+            />
+          </Field>
+
           <Field label="Username">
             <input
               value={form.username}
@@ -91,7 +101,7 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
             </select>
           </Field>
 
-          <Field label="Email (for critical-anomaly alerts)">
+          <Field label="Email (required — for alerts & password reset)">
             <input
               type="email"
               value={form.email}
@@ -155,7 +165,7 @@ export default function UsersView() {
   const [formErr, setFormErr] = useState('')
 
   function openCreate() { setForm(EMPTY_FORM); setFormErr(''); setModal('create') }
-  function openEdit(u)  { setForm({ username: u.username, password: '', role: u.role, email: u.email ?? '' }); setFormErr(''); setModal(u) }
+  function openEdit(u)  { setForm({ username: u.username, name: u.name ?? '', password: '', role: u.role, email: u.email ?? '' }); setFormErr(''); setModal(u) }
   function closeModal() { setModal(null) }
 
   async function handleSave() {

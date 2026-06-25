@@ -4,18 +4,18 @@ import { Eye, EyeOff, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const ROLE_DEFAULT_ROUTE = {
-  admin:        '/dashboard',
+  admin: '/dashboard',
   ground_staff: '/alerts',
 }
 
 export default function LoginPage() {
-  const { login }               = useAuth()
-  const navigate                = useNavigate()
+  const { login } = useAuth()
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [showPw,   setShowPw]   = useState(false)
-  const [error,    setError]    = useState('')
-  const [loading,  setLoading]  = useState(false)
+  const [showPw, setShowPw] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -64,7 +64,7 @@ export default function LoginPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 900, fontSize: 18,
           }}>S</div>
-          <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.01em' }}>SkyWatcher</span>
+          <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.01em' }}><span style={{ color: 'var(--brand-sky)' }}>Sky</span>Watcher</span>
         </Link>
 
         <Link to="/" style={{
@@ -98,7 +98,7 @@ export default function LoginPage() {
               marginBottom: 12,
             }}>Staff sign in</h1>
             <p style={{ fontSize: 15, color: 'var(--lt-text-2)', lineHeight: 1.5 }}>
-              For airport operations staff only.<br/>
+              For airport operations staff only.<br />
               Looking for your bag? <Link to="/" style={{ color: 'var(--lt-cta)', fontWeight: 600 }}>Track without an account</Link>
             </p>
           </div>
@@ -188,6 +188,15 @@ export default function LoginPage() {
             >
               {loading ? 'Signing in…' : <>Sign in <ArrowRight size={17} strokeWidth={2.5} /></>}
             </button>
+
+            {/* Forgot password link */}
+            <div style={{ textAlign: 'right', marginTop: 10 }}>
+              <a href="/forgot-password" style={{ fontSize: 12, color: 'var(--lt-muted)', textDecoration: 'none' }}
+                onMouseOver={e => e.target.style.color = 'var(--lt-cta)'}
+                onMouseOut={e => e.target.style.color = 'var(--lt-muted)'}>
+                Forgot password?
+              </a>
+            </div>
           </form>
 
           {/* Demo credentials */}
@@ -213,7 +222,7 @@ export default function LoginPage() {
                 <span style={{ color: 'var(--lt-muted)' }}> / admin123 — Full access</span>
               </div>
               <div>
-                <span style={{ fontWeight: 600, color: 'var(--lt-text)' }}>staff_security</span>
+                <span style={{ fontWeight: 600, color: 'var(--lt-text)' }}>staff</span>
                 <span style={{ color: 'var(--lt-muted)' }}> / staff123 — Ground staff</span>
               </div>
             </div>

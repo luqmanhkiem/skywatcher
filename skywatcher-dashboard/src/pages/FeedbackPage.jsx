@@ -68,7 +68,7 @@ export default function FeedbackPage() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 900, fontSize: 18,
           }}>S</div>
-          <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.01em' }}>SkyWatcher</span>
+          <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.01em' }}><span style={{ color: 'var(--brand-sky)' }}>Sky</span>Watcher</span>
         </Link>
         <Link to="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,

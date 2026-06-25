@@ -36,3 +36,6 @@ supabase/.temp/
 .agents/
 .claude/
 skills-lock.json
+
+# Local scratch/debug scripts
+scratch.py

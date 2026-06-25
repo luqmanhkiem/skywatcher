@@ -8,9 +8,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///   • Real iPhone / iOS simulator on the same Wi-Fi → your Mac's LAN IP
 ///   • Android emulator                              → 10.0.2.2 (host alias)
 ///
-/// Your Mac's current LAN IP is 192.168.1.19 (re-check with `ipconfig getifaddr en0`).
-const String kBaseUrl = 'http://192.168.1.19:5001/api';
-// const String kBaseUrl = 'http://10.0.2.2:5001/api'; // ← use this for Android emulator
+/// Default: real iPhone → your Mac's LAN IP (phone + Mac must share the same Wi-Fi).
+const String kBaseUrl = 'http://10.131.79.98:5001/api'; // ← Mac LAN IP (re-check with `ipconfig getifaddr en0`)
+// const String kBaseUrl = 'http://localhost:5001/api';  // ← iOS Simulator
+// const String kBaseUrl = 'http://10.0.2.2:5001/api';   // ← Android emulator
 
 const String _tokenKey = 'sw_token';
 
@@ -81,6 +82,114 @@ class SkyWatcherApi {
     if (res.statusCode != 200) {
       throw Exception(_error(res, 'Failed to resolve alert'));
     }
+  }
+
+  /// GET /bags → { bags, count }
+  Future<List<dynamic>> getBags() async {
+    final res = await http.get(Uri.parse('$kBaseUrl/bags'), headers: _headers);
+    if (res.statusCode != 200) {
+      throw Exception(_error(res, 'Failed to load bags'));
+    }
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    return (data['bags'] as List?) ?? [];
+  }
+
+  /// GET /bags/:tagId/history → { tag_id, events, count }
+  Future<List<dynamic>> getBagHistory(String tagId) async {
+    final res = await http.get(
+      Uri.parse('$kBaseUrl/bags/${Uri.encodeComponent(tagId)}/history'),
+      headers: _headers,
+    );
+    if (res.statusCode != 200) {
+      throw Exception(_error(res, 'Failed to load bag history'));
+    }
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    return (data['events'] as List?) ?? [];
+  }
+
+  /// GET /bags/:tagId/status-history → { tag_id, history, count }
+  /// The FSM state-transition trail (oldest first).
+  Future<List<dynamic>> getBagStatusHistory(String tagId) async {
+    final res = await http.get(
+      Uri.parse('$kBaseUrl/bags/${Uri.encodeComponent(tagId)}/status-history'),
+      headers: _headers,
+    );
+    if (res.statusCode != 200) {
+      throw Exception(_error(res, 'Failed to load status history'));
+    }
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    return (data['history'] as List?) ?? [];
+  }
+
+  /// POST /bags/:tagId/scan → register an operator checkpoint scan.
+  /// Returns { tag_id, checkpoint, status, anomaly }.
+  Future<Map<String, dynamic>> registerScan(
+    String tagId,
+    String checkpoint,
+  ) async {
+    final res = await http.post(
+      Uri.parse('$kBaseUrl/bags/${Uri.encodeComponent(tagId)}/scan'),
+      headers: _headers,
+      body: jsonEncode({'checkpoint': checkpoint}),
+    );
+    if (res.statusCode != 201) {
+      throw Exception(_error(res, 'Scan failed'));
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  /// POST /bags/:tagId/action → apply an operator action
+  /// (hold/release/reroute/claim/report_lost/found).
+  /// Returns { tag_id, from_status, status, action }. An illegal action → 409.
+  Future<Map<String, dynamic>> bagAction(String tagId, String action) async {
+    final res = await http.post(
+      Uri.parse('$kBaseUrl/bags/${Uri.encodeComponent(tagId)}/action'),
+      headers: _headers,
+      body: jsonEncode({'action': action}),
+    );
+    if (res.statusCode != 200) {
+      throw Exception(_error(res, 'Action failed'));
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  /// POST /auth/forgot-password → send reset email (always 200)
+  Future<void> forgotPassword(String email) async {
+    final res = await http.post(
+      Uri.parse('$kBaseUrl/auth/forgot-password'),
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+    if (res.statusCode != 200) throw Exception(_error(res, 'Request failed'));
+  }
+
+  /// GET /advisories?all=true → list of all checkpoint advisories.
+  Future<List<dynamic>> getAdvisories() async {
+    final res = await http.get(
+      Uri.parse('$kBaseUrl/advisories?all=true'),
+      headers: _headers,
+    );
+    if (res.statusCode != 200) throw Exception(_error(res, 'Failed to load advisories'));
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    return data['advisories'] as List<dynamic>? ?? [];
+  }
+
+  /// POST /advisories/request → submit an advisory change request.
+  Future<void> requestAdvisory({
+    required String checkpoint,
+    required String level,
+    String? message,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$kBaseUrl/advisories/request'),
+      headers: _headers,
+      body: jsonEncode({
+        'checkpoint': checkpoint,
+        'level': level,
+        if (message != null && message.isNotEmpty) 'message': message,
+      }),
+    );
+    if (res.statusCode != 201) throw Exception(_error(res, 'Request failed'));
   }
 
   String _error(http.Response res, String fallback) {

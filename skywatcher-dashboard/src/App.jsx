@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
-import { Activity, Luggage, Bell, BarChart2, Plane, Radio, LogOut, User, Users, MessageSquare, Menu, X } from 'lucide-react'
+import { Activity, Luggage, Bell, BarChart2, Plane, Radio, LogOut, User, Users, MessageSquare, Megaphone, Menu, X, Sun, Moon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useIsMobile }  from './hooks/useIsMobile'
@@ -16,11 +16,24 @@ import FlightsView       from './pages/FlightsView'
 import UsersView         from './pages/UsersView'
 import InjectBagView     from './pages/InjectBagView'
 import FeedbackInbox     from './pages/FeedbackInbox'
+import AdvisoriesView    from './pages/AdvisoriesView'
 import PublicTrack       from './pages/PublicTrack'
-import MarketingLanding  from './pages/MarketingLanding'
-import FeedbackPage      from './pages/FeedbackPage'
+import MarketingLanding      from './pages/MarketingLanding'
+import FeedbackPage          from './pages/FeedbackPage'
+import ForgotPasswordPage    from './pages/ForgotPasswordPage'
+import ResetPasswordPage     from './pages/ResetPasswordPage'
 import { usePolling }    from './hooks/usePolling'
 import { fetchAlerts, fetchFeedback } from './utils/api'
+
+// ── Theme (dark / light) ──────────────────────────────────────────────────────
+function useTheme() {
+  const [dark, setDark] = useState(() => localStorage.getItem('sw_theme') === 'dark')
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+    localStorage.setItem('sw_theme', dark ? 'dark' : 'light')
+  }, [dark])
+  return [dark, setDark]
+}
 
 // Nav items per role
 const NAV_ADMIN = [
@@ -30,15 +43,17 @@ const NAV_ADMIN = [
   { to: '/stats',     icon: BarChart2, label: 'Analytics' },
   { to: '/flights',   icon: Plane,     label: 'Flights'   },
   { to: '/inject',    icon: Radio,         label: 'Inject Bag' },
+  { to: '/advisories', icon: Megaphone,    label: 'Advisories' },
   { to: '/support',   icon: MessageSquare, label: 'Support'   },
   { to: '/users',     icon: Users,         label: 'Users'     },
 ]
 
 const NAV_STAFF = [
-  { to: '/dashboard', icon: Activity,      label: 'Live Map' },
-  { to: '/bags',      icon: Luggage,       label: 'Bags'     },
-  { to: '/alerts',    icon: Bell,          label: 'Alerts'   },
-  { to: '/support',   icon: MessageSquare, label: 'Support'  },
+  { to: '/dashboard',  icon: Activity,      label: 'Live Map' },
+  { to: '/bags',       icon: Luggage,       label: 'Bags'     },
+  { to: '/alerts',     icon: Bell,          label: 'Alerts'   },
+  { to: '/advisories', icon: Megaphone,     label: 'Advisories' },
+  { to: '/support',    icon: MessageSquare, label: 'Support'  },
 ]
 
 const ROLE_BADGE_STYLE = {
@@ -63,7 +78,7 @@ const navBadge = {
   lineHeight: '16px',
 }
 
-function Sidebar({ unresolved, newFeedback, error, isMobile, drawerOpen, onClose }) {
+function Sidebar({ unresolved, newFeedback, error, isMobile, drawerOpen, onClose, dark, onToggleTheme }) {
   const { user, logout, isRole } = useAuth()
   const nav = isRole('admin') ? NAV_ADMIN : NAV_STAFF
   const roleStyle = ROLE_BADGE_STYLE[user?.role] ?? ROLE_BADGE_STYLE.admin
@@ -149,7 +164,7 @@ function Sidebar({ unresolved, newFeedback, error, isMobile, drawerOpen, onClose
               color: 'var(--text)',
               lineHeight: 1.1,
             }}>
-              SkyWatcher
+              <span style={{ color: 'var(--brand-sky)' }}>Sky</span>Watcher
             </div>
             <div style={{
               fontSize: 11,
@@ -241,12 +256,19 @@ function Sidebar({ unresolved, newFeedback, error, isMobile, drawerOpen, onClose
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user?.username}
+                {user?.name || user?.username}
               </div>
               <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 1 }}>
                 {ROLE_LABELS[user?.role]}
               </div>
             </div>
+            <button onClick={onToggleTheme} title={dark ? 'Switch to light mode' : 'Switch to dark mode'} style={{
+              background: 'none', border: '1px solid var(--border-2)',
+              borderRadius: 7, padding: '5px 7px', cursor: 'pointer',
+              color: 'var(--muted)', flexShrink: 0, display: 'flex',
+            }}>
+              {dark ? <Sun size={13} /> : <Moon size={13} />}
+            </button>
           </div>
         </div>
 
@@ -295,7 +317,7 @@ function Sidebar({ unresolved, newFeedback, error, isMobile, drawerOpen, onClose
   )
 }
 
-function StaffLayout() {
+function StaffLayout({ dark, onToggleTheme }) {
   const fetchFn = useCallback(() => fetchAlerts(100), [])
   const { data: alertData, error } = usePolling(fetchFn, 3000)
   const unresolved = alertData?.unresolved ?? 0
@@ -340,6 +362,8 @@ function StaffLayout() {
         isMobile={isMobile}
         drawerOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        dark={dark}
+        onToggleTheme={onToggleTheme}
       />
       <main style={{ flex: 1, overflow: 'auto', background: 'var(--bg)', position: 'relative' }}>
         {/* Mobile hamburger */}
@@ -405,7 +429,8 @@ function StaffLayout() {
               <InjectBagView />
             </ProtectedRoute>
           } />
-          <Route path="/support" element={<FeedbackInbox />} />
+          <Route path="/support"    element={<FeedbackInbox />} />
+          <Route path="/advisories" element={<AdvisoriesView />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
@@ -415,6 +440,7 @@ function StaffLayout() {
 
 export default function App() {
   const { user, loading } = useAuth()
+  const [dark, setDark]   = useTheme()
 
   // Wait for token validation before rendering anything
   if (loading) return null
@@ -430,6 +456,10 @@ export default function App() {
       {/* Public feedback / issue reporting — no login required */}
       <Route path="/feedback" element={<FeedbackPage />} />
 
+      {/* Password reset flow — public */}
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password"  element={<ResetPasswordPage />} />
+
       {/* Staff sign in */}
       <Route path="/login" element={
         user ? <Navigate to="/dashboard" replace /> : <LoginPage />
@@ -438,7 +468,7 @@ export default function App() {
       {/* Admin + Ground Staff — everything else */}
       <Route path="/*" element={
         <ProtectedRoute roles={['admin', 'ground_staff']}>
-          <StaffLayout />
+          <StaffLayout dark={dark} onToggleTheme={() => setDark(d => !d)} />
         </ProtectedRoute>
       } />
     </Routes>

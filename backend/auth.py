@@ -62,6 +62,7 @@ def make_token(user: dict) -> str:
     payload = {
         'sub':       str(user['id']),
         'username':  user['username'],
+        'name':      user.get('name'),
         'role':      user['role'],
         'flight_id': user.get('flight_id'),
         'tag_id':    user.get('tag_id'),

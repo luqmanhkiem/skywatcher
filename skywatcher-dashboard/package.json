@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "./node_modules/.bin/vite",
+    "dev": "./node_modules/.bin/vite --host",
     "build": "./node_modules/.bin/vite build",
     "preview": "./node_modules/.bin/vite preview"
   },

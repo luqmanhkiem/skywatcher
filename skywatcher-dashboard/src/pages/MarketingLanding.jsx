@@ -49,17 +49,20 @@ function useTypewriter(strings) {
 export default function MarketingLanding() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
-  const [flight,   setFlight]   = useState('')
-  const [passenger, setPassenger] = useState('')
+  const [flight,      setFlight]      = useState('')
+  const [passenger,   setPassenger]   = useState('')
+  const [bookingRef,  setBookingRef]  = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const bubble = useTypewriter(SAMPLE_BUBBLES)
 
   function handleTrack(e) {
     e.preventDefault()
-    if (!flight.trim() || !passenger.trim()) return
-    const q = new URLSearchParams({ flight: flight.trim(), passenger: passenger.trim() }).toString()
-    navigate(`/track?${q}`)
+    const ref = bookingRef.trim().toUpperCase()
+    if (!ref) return
+    navigate(`/track?ref=${encodeURIComponent(ref)}`)
   }
+
+  const canTrack = !!bookingRef.trim()
 
   return (
     <div style={{
@@ -87,7 +90,7 @@ export default function MarketingLanding() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 900, fontSize: 18, fontFamily: 'var(--lt-font)',
           }}>S</div>
-          <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.01em' }}>SkyWatcher</span>
+          <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.01em' }}><span style={{ color: 'var(--brand-sky)' }}>Sky</span>Watcher</span>
         </Link>
 
         {/* Desktop nav */}
@@ -247,7 +250,7 @@ export default function MarketingLanding() {
           fontWeight: 400,
         }}>
           Real-time baggage tracking for every flight you take.<br/>
-          No app, no account — just your flight and a name.
+          No app, no account — enter your booking reference to track your bag.
         </p>
 
         {/* Inline tracking form */}
@@ -268,19 +271,20 @@ export default function MarketingLanding() {
             boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
           }}
         >
-          <FormField label="Flight" value={flight} onChange={setFlight} placeholder="MH370" />
-          <div style={{
-            ...(isMobile ? { height: 1, width: '100%', margin: '2px 0' } : { width: 1, margin: '6px 0' }),
-            background: 'var(--lt-border)',
-          }} />
-          <FormField label="Passenger" value={passenger} onChange={setPassenger} placeholder="Tan" />
+          <FormField
+            label="Booking Reference"
+            value={bookingRef}
+            onChange={v => setBookingRef(v.toUpperCase().slice(0, 6))}
+            placeholder="AB3X7Q"
+            mono
+          />
 
           <button
             type="submit"
-            disabled={!flight.trim() || !passenger.trim()}
+            disabled={!canTrack}
             style={{
               ...ctaButton,
-              opacity: (!flight.trim() || !passenger.trim()) ? 0.45 : 1,
+              opacity: !canTrack ? 0.45 : 1,
               padding: isMobile ? '14px 24px' : '0 24px',
               marginTop: isMobile ? 4 : 0,
               justifyContent: 'center',
@@ -410,7 +414,7 @@ export default function MarketingLanding() {
         color: 'var(--lt-muted)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <span>SkyWatcher — Real-time baggage tracking</span>
+          <span><span style={{ color: 'var(--brand-sky)' }}>Sky</span>Watcher — Real-time baggage tracking</span>
           <Link to="/feedback" style={{ color: 'var(--lt-text-2)', textDecoration: 'none', fontWeight: 500 }}>
             Report an issue
           </Link>
@@ -423,7 +427,16 @@ export default function MarketingLanding() {
 
 /* ─── Sub-components ──────────────────────────────────────────────────── */
 
-function FormField({ label, value, onChange, placeholder }) {
+function Divider({ mobile }) {
+  return (
+    <div style={{
+      ...(mobile ? { height: 1, width: '100%', margin: '2px 0' } : { width: 1, margin: '6px 0' }),
+      background: 'var(--lt-border)',
+    }} />
+  )
+}
+
+function FormField({ label, value, onChange, placeholder, mono = false }) {
   return (
     <label style={{
       flex: 1,
@@ -451,7 +464,8 @@ function FormField({ label, value, onChange, placeholder }) {
           fontSize: 18,
           fontWeight: 500,
           color: 'var(--lt-text)',
-          fontFamily: 'var(--lt-font)',
+          fontFamily: mono ? 'var(--font-mono)' : 'var(--lt-font)',
+          letterSpacing: mono ? '0.12em' : undefined,
           padding: 0,
           width: '100%',
         }}

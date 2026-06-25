@@ -46,6 +46,7 @@ function timeAgo(iso) {
 const COLUMNS = [
   { key: 'tag_id',          label: 'Tag ID'          },
   { key: 'passenger',       label: 'Passenger'       },
+  { key: 'booking_ref',     label: 'Booking Ref'     },
   { key: 'flight_id',       label: 'Flight'          },
   { key: 'last_checkpoint', label: 'Last Checkpoint' },
   { key: 'status',          label: 'Status'          },
@@ -78,8 +79,9 @@ export default function BagTable() {
   const q = query.toLowerCase()
   const bags = (data?.bags ?? []).filter(b =>
     b.tag_id.toLowerCase().includes(q) ||
-    (b.passenger  || '').toLowerCase().includes(q) ||
-    (b.flight_id  || '').toLowerCase().includes(q) ||
+    (b.passenger   || '').toLowerCase().includes(q) ||
+    (b.flight_id   || '').toLowerCase().includes(q) ||
+    (b.booking_ref || '').toLowerCase().includes(q) ||
     (b.status     || '').toLowerCase().includes(q)
   )
 
@@ -103,7 +105,7 @@ export default function BagTable() {
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search tag, passenger, flight…"
+            placeholder="Search tag, passenger, flight, booking ref…"
             style={{
               background: 'var(--surface-2)',
               border: '1px solid var(--border)',
@@ -178,7 +180,14 @@ export default function BagTable() {
                   </span>
                   <StatusBadge label={bag.status} />
                 </div>
-                <div style={{ fontSize: 14, color: 'var(--text)', fontWeight: 500 }}>{bag.passenger}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 500 }}>{bag.passenger}</span>
+                  {bag.booking_ref && (
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--accent)', background: 'rgba(245,166,35,0.10)', borderRadius: 5, padding: '1px 6px', letterSpacing: '0.08em' }}>
+                      {bag.booking_ref}
+                    </span>
+                  )}
+                </div>
                 <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--muted)', flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: 'var(--font-mono)' }}>✈ {bag.flight_id}</span>
                   <span style={{ color: cpColor, fontWeight: 600 }}>{CP_LABELS[bag.last_checkpoint] ?? bag.last_checkpoint}</span>
@@ -280,6 +289,11 @@ export default function BagTable() {
                       {bag.passenger || <span style={{ color: 'var(--muted)' }}>—</span>}
                     </td>
                     <td style={{ padding: '11px 14px' }}>
+                      {bag.booking_ref
+                        ? <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 11, letterSpacing: '0.08em' }}>{bag.booking_ref}</span>
+                        : <span style={{ color: 'var(--muted)' }}>—</span>}
+                    </td>
+                    <td style={{ padding: '11px 14px' }}>
                       <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--success)', fontWeight: 600, fontSize: 11, letterSpacing: '0.04em' }}>
                         {bag.flight_id}
                       </span>
@@ -325,6 +339,7 @@ export default function BagTable() {
           tagId={selected.tag_id}
           passenger={selected.passenger}
           flightId={selected.flight_id}
+          status={selected.status}
           onClose={() => setSelected(null)}
         />
       )}

@@ -1,8 +1,8 @@
-import { useCallback } from 'react'
-import { Plane, Package, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
-import { usePolling }    from '../hooks/usePolling'
-import { fetchFlights }  from '../utils/api'
-import PageHeader        from '../components/PageHeader'
+import { useCallback, useState } from 'react'
+import { Plane, Package, AlertTriangle, CheckCircle2, Clock, Navigation } from 'lucide-react'
+import { usePolling }                    from '../hooks/usePolling'
+import { fetchFlights, setFlightCarousel } from '../utils/api'
+import PageHeader                        from '../components/PageHeader'
 
 function parseISO(iso) {
   if (!iso) return null
@@ -18,7 +18,86 @@ function timeAgo(iso) {
   return `${Math.floor(diff / 3600)}h ago`
 }
 
+function CarouselEdit({ flightId, current, onSaved }) {
+  const [val,     setVal]     = useState(current ?? '')
+  const [saving,  setSaving]  = useState(false)
+  const [editing, setEditing] = useState(false)
+
+  async function save() {
+    if (!val.trim()) return
+    setSaving(true)
+    try {
+      await setFlightCarousel(flightId, val.trim())
+      onSaved(val.trim())
+      setEditing(false)
+    } catch (_) {
+      // keep editing open on error
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => setEditing(true)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: current ? 'rgba(0,204,125,0.08)' : 'var(--surface-2)',
+          border: `1px solid ${current ? 'rgba(0,204,125,0.25)' : 'var(--border-2)'}`,
+          color: current ? 'var(--success)' : 'var(--muted)',
+          borderRadius: 8, padding: '6px 12px',
+          fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
+          cursor: 'pointer', letterSpacing: '0.04em',
+        }}
+      >
+        <Navigation size={13} />
+        {current ? `Belt ${current}` : 'Assign belt'}
+      </button>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+      <input
+        autoFocus
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false) }}
+        placeholder="e.g. 4"
+        style={{
+          width: 80, padding: '6px 10px', borderRadius: 7,
+          border: '1px solid var(--accent)', background: 'var(--surface-2)',
+          color: 'var(--text)', fontSize: 13, fontFamily: 'var(--font-mono)',
+          outline: 'none',
+        }}
+      />
+      <button
+        onClick={save}
+        disabled={saving || !val.trim()}
+        style={{
+          padding: '6px 12px', borderRadius: 7,
+          background: 'var(--accent)', color: '#fff', border: 'none',
+          fontSize: 12, fontWeight: 600, cursor: 'pointer',
+          opacity: (!val.trim() || saving) ? 0.5 : 1,
+        }}
+      >
+        {saving ? '…' : 'Save'}
+      </button>
+      <button
+        onClick={() => setEditing(false)}
+        style={{
+          padding: '6px 10px', borderRadius: 7,
+          background: 'var(--surface-2)', color: 'var(--muted)',
+          border: '1px solid var(--border-2)', fontSize: 12, cursor: 'pointer',
+        }}
+      >×</button>
+    </div>
+  )
+}
+
 function FlightCard({ f }) {
+  const [carousel, setCarousel] = useState(f.carousel ?? null)
   const pct        = f.total_bags > 0 ? Math.round((f.arrived / f.total_bags) * 100) : 0
   const isComplete = pct === 100
   const hasAnomaly = f.bags_with_anomalies > 0
@@ -172,6 +251,18 @@ function FlightCard({ f }) {
         }}>
           {pct}%
         </span>
+      </div>
+
+      {/* ── Carousel assignment ─────────────────── */}
+      <div style={{
+        marginTop: 12,
+        paddingTop: 12,
+        borderTop: '1px solid var(--border)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        gap: 8,
+      }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Baggage Belt</span>
+        <CarouselEdit flightId={f.flight_id} current={carousel} onSaved={setCarousel} />
       </div>
     </div>
   )
