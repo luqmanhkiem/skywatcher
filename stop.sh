@@ -12,8 +12,8 @@ log()  { echo -e "${GREEN}[SkyWatcher]${NC} $*"; }
 warn() { echo -e "${YELLOW}[SkyWatcher]${NC} $*"; }
 
 if [ ! -f "$PIDS" ]; then
-  warn "No .pids file found — killing any processes on ports 5000 and 5173..."
-  for PORT in 5000 5173; do
+  warn "No .pids file found — killing any processes on ports 5001 and 5173..."
+  for PORT in 5001 5173; do
     PID=$(lsof -ti tcp:$PORT 2>/dev/null || true)
     [ -n "$PID" ] && kill -9 $PID 2>/dev/null && log "  Killed process on port $PORT (PID $PID)"
   done

@@ -1,28 +1,35 @@
-import os
-import sys
-import threading
+import random
+from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, request, g
 
 from auth import token_required
 from models.database import (
+    auto_assign_carousel,
     get_all_users,
     create_user,
     update_user,
     deactivate_user,
     get_user_by_id,
     get_bag_by_tag,
+    insert_event,
 )
-
-# Make the simulator package importable so the dashboard can inject bags
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'simulator'))
-from rfid_sim import simulate_one_bag, SCENARIO_TO_ANOMALY  # noqa: E402
 
 admin_bp = Blueprint('admin', __name__)
 
+_BOOKING_REF_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'  # no 0/O/1/I
+
+def _gen_booking_ref() -> str:
+    return ''.join(random.choices(_BOOKING_REF_CHARS, k=6))
+
+
+@admin_bp.route('/admin/booking-ref', methods=['GET'])
+@token_required('admin', 'ground_staff')
+def gen_booking_ref():
+    """Generate a fresh 6-character booking reference."""
+    return jsonify({'booking_ref': _gen_booking_ref()})
+
 VALID_ROLES = {'admin', 'ground_staff'}
-VALID_CHECKPOINTS = {'check_in', 'security', 'sorting', 'loading', 'arrival'}
-VALID_SCENARIOS = set(SCENARIO_TO_ANOMALY.keys())
 
 
 @admin_bp.route('/admin/users', methods=['GET'])
@@ -38,12 +45,13 @@ def add_user():
     """Create a new user account."""
     data = request.get_json(silent=True) or {}
 
-    username   = (data.get('username') or '').strip()
-    password   = data.get('password', '')
-    role       = data.get('role', '')
-    checkpoint = data.get('checkpoint') or None
-    flight_id  = (data.get('flight_id') or '').strip() or None
-    tag_id     = (data.get('tag_id') or '').strip() or None
+    username  = (data.get('username') or '').strip()
+    password  = data.get('password', '')
+    role      = data.get('role', '')
+    name      = (data.get('name') or '').strip() or None
+    email     = (data.get('email') or '').strip() or None
+    flight_id = (data.get('flight_id') or '').strip() or None
+    tag_id    = (data.get('tag_id') or '').strip() or None
 
     if not username:
         return jsonify({'error': 'username is required'}), 400
@@ -51,15 +59,19 @@ def add_user():
         return jsonify({'error': 'password must be at least 6 characters'}), 400
     if role not in VALID_ROLES:
         return jsonify({'error': f'role must be one of {sorted(VALID_ROLES)}'}), 400
-    if role == 'ground_staff' and checkpoint and checkpoint not in VALID_CHECKPOINTS:
-        return jsonify({'error': f'checkpoint must be one of {sorted(VALID_CHECKPOINTS)}'}), 400
+    if not email:
+        return jsonify({'error': 'email is required'}), 400
+    if '@' not in email:
+        return jsonify({'error': 'email looks invalid'}), 400
 
     try:
         user = create_user(
             username=username,
             password=password,
             role=role,
-            checkpoint=checkpoint,
+            name=name,
+            checkpoint=None,
+            email=email,
             flight_id=flight_id,
             tag_id=tag_id,
         )
@@ -120,21 +132,15 @@ def disable_user(user_id):
 @token_required('admin')
 def simulate_inject_bag():
     """
-    Inject a single operator-supplied bag into the live MQTT stream.
-    Runs the simulation in a background thread so the request returns
-    immediately; events flow through the existing MQTT → DB → ML pipeline.
+    Register one bag at check_in and auto-assign a belt.
+    The bag then waits for operator scans at each subsequent checkpoint.
     """
     data = request.get_json(silent=True) or {}
 
-    tag_id    = (data.get('tag_id')    or '').strip()
-    passenger = (data.get('passenger') or '').strip()
-    flight_id = (data.get('flight_id') or '').strip()
-    scenario  = (data.get('scenario')  or 'normal').strip()
-
-    try:
-        speed = float(data.get('speed', 1.0))
-    except (TypeError, ValueError):
-        return jsonify({'error': 'speed must be a number'}), 400
+    tag_id      = (data.get('tag_id')      or '').strip()
+    passenger   = (data.get('passenger')   or '').strip()
+    flight_id   = (data.get('flight_id')   or '').strip().upper()
+    booking_ref = (data.get('booking_ref') or '').strip().upper() or _gen_booking_ref()
 
     if not tag_id:
         return jsonify({'error': 'tag_id is required'}), 400
@@ -142,25 +148,28 @@ def simulate_inject_bag():
         return jsonify({'error': 'passenger is required'}), 400
     if not flight_id:
         return jsonify({'error': 'flight_id is required'}), 400
-    if scenario not in VALID_SCENARIOS:
-        return jsonify({'error': f'scenario must be one of {sorted(VALID_SCENARIOS)}'}), 400
-    if speed < 0.1 or speed > 5.0:
-        return jsonify({'error': 'speed must be between 0.1 and 5.0'}), 400
 
     if get_bag_by_tag(tag_id):
         return jsonify({'error': f'Tag "{tag_id}" already exists in the system'}), 409
 
-    threading.Thread(
-        target=simulate_one_bag,
-        args=(tag_id, passenger, flight_id, scenario, speed),
-        daemon=True,
-    ).start()
+    actor = g.user.get('username', 'admin')
+
+    insert_event({
+        'tag_id':       tag_id,
+        'flight_id':    flight_id,
+        'passenger':    passenger,
+        'booking_ref':  booking_ref,
+        'checkpoint':   'check_in',
+        'timestamp':    datetime.now(timezone.utc).isoformat(),
+    }, actor=actor)
+
+    belt = auto_assign_carousel(flight_id, actor=actor)
 
     return jsonify({
-        'status':    'queued',
-        'tag_id':    tag_id,
-        'passenger': passenger,
-        'flight_id': flight_id,
-        'scenario':  scenario,
-        'speed':     speed,
-    }), 202
+        'status':       'registered',
+        'tag_id':       tag_id,
+        'passenger':    passenger,
+        'flight_id':    flight_id,
+        'booking_ref':  booking_ref,
+        'belt':         belt,
+    }), 201

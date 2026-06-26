@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { Plus, Edit2, UserX, CheckCircle, XCircle } from 'lucide-react'
 import { usePolling }  from '../hooks/usePolling'
 import { useToast }    from '../context/ToastContext'
@@ -8,14 +9,13 @@ import {
 import PageHeader from '../components/PageHeader'
 
 const ROLES = ['admin', 'ground_staff']
-const CHECKPOINTS = ['check_in', 'security', 'sorting', 'loading', 'arrival']
 
 const ROLE_STYLE = {
   admin:        { bg: 'rgba(245,166,35,0.12)',  color: '#F5A623', label: 'Admin' },
   ground_staff: { bg: 'rgba(0,204,125,0.12)',   color: '#00CC7D', label: 'Ground Staff' },
 }
 
-const EMPTY_FORM = { username: '', password: '', role: 'ground_staff', checkpoint: '' }
+const EMPTY_FORM = { username: '', name: '', password: '', role: 'ground_staff', email: '' }
 
 function RoleChip({ role }) {
   const s = ROLE_STYLE[role] ?? { bg: 'var(--surface-3)', color: 'var(--muted-2)', label: role }
@@ -30,13 +30,12 @@ function RoleChip({ role }) {
 }
 
 function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error }) {
-  const isStaff = form.role === 'ground_staff'
-
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       background: 'rgba(15,15,15,0.45)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      overflowY: 'auto', padding: '40px 16px',
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: 'var(--surface)',
@@ -44,9 +43,11 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
         borderTop: '2px solid var(--accent)',
         borderRadius: 12,
         padding: '28px 28px 24px',
-        width: 440,
-        maxHeight: '90vh',
+        width: '100%',
+        maxWidth: 440,
+        maxHeight: 'calc(100vh - 80px)',
         overflowY: 'auto',
+        flexShrink: 0,
         boxShadow: '0 24px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
       }}>
         <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--text)', marginBottom: 22 }}>{title}</h2>
@@ -60,6 +61,15 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <Field label="Display Name">
+            <input
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Ahmad Luqman"
+              style={inputStyle}
+            />
+          </Field>
+
           <Field label="Username">
             <input
               value={form.username}
@@ -82,7 +92,7 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
           <Field label="Role">
             <select
               value={form.role}
-              onChange={e => setForm(f => ({ ...f, role: e.target.value, checkpoint: '' }))}
+              onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
               style={inputStyle}
             >
               {ROLES.map(r => (
@@ -91,20 +101,15 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
             </select>
           </Field>
 
-          {isStaff && (
-            <Field label="Checkpoint">
-              <select
-                value={form.checkpoint}
-                onChange={e => setForm(f => ({ ...f, checkpoint: e.target.value }))}
-                style={inputStyle}
-              >
-                <option value="">— None —</option>
-                {CHECKPOINTS.map(cp => (
-                  <option key={cp} value={cp}>{cp.replace('_', ' ')}</option>
-                ))}
-              </select>
-            </Field>
-          )}
+          <Field label="Email (required — for alerts & password reset)">
+            <input
+              type="email"
+              value={form.email}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              placeholder="staff@gmail.com"
+              style={inputStyle}
+            />
+          </Field>
 
         </div>
 
@@ -150,6 +155,7 @@ const btnSecondary = {
 
 export default function UsersView() {
   const { showToast } = useToast()
+  const isMobile = useIsMobile()
   const fetchFn = useCallback(() => fetchUsers(), [])
   const { data: users, loading, refresh } = usePolling(fetchFn, 5000)
 
@@ -159,7 +165,7 @@ export default function UsersView() {
   const [formErr, setFormErr] = useState('')
 
   function openCreate() { setForm(EMPTY_FORM); setFormErr(''); setModal('create') }
-  function openEdit(u)  { setForm({ username: u.username, password: '', role: u.role, checkpoint: u.checkpoint ?? '' }); setFormErr(''); setModal(u) }
+  function openEdit(u)  { setForm({ username: u.username, name: u.name ?? '', password: '', role: u.role, email: u.email ?? '' }); setFormErr(''); setModal(u) }
   function closeModal() { setModal(null) }
 
   async function handleSave() {
@@ -199,27 +205,69 @@ export default function UsersView() {
       <PageHeader
         title="User Management"
         subtitle="Create and manage admin and ground staff accounts"
-        action={
-          <button onClick={openCreate} style={{ ...btnPrimary, display: 'flex', alignItems: 'center', gap: 7 }}>
-            <Plus size={14} /> New User
-          </button>
-        }
-      />
+      >
+        <button onClick={openCreate} style={{ ...btnPrimary, display: 'flex', alignItems: 'center', gap: 7 }}>
+          <Plus size={14} /> New User
+        </button>
+      </PageHeader>
 
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: isMobile ? '14px 14px 80px' : 24 }}>
         <div style={{
-          background: 'var(--surface)', border: '1px solid var(--border)',
+          background: isMobile ? 'transparent' : 'var(--surface)',
+          border: isMobile ? 'none' : '1px solid var(--border)',
           borderRadius: 13, overflow: 'hidden',
         }}>
           {loading ? (
             <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Loading…</div>
           ) : rows.length === 0 ? (
             <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>No users found.</div>
+          ) : isMobile ? (
+            /* Mobile: card list */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {rows.map(u => {
+                const inactive = !u.active
+                return (
+                  <div key={u.id} style={{
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 12,
+                    padding: 14,
+                    opacity: inactive ? 0.5 : 1,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--muted-2)' }}>#{u.id}</span>
+                        <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text)' }}>{u.username}</span>
+                      </div>
+                      <RoleChip role={u.role} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--muted)', flexWrap: 'wrap', marginBottom: 12 }}>
+                      <span>{u.email || 'no email'}</span>
+                      <span>·</span>
+                      {u.active
+                        ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--success)' }}><CheckCircle size={11} /> Active</span>
+                        : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--muted)' }}><XCircle size={11} /> Inactive</span>
+                      }
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => openEdit(u)} style={{ ...iconBtn, padding: '7px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Edit2 size={12} /> Edit
+                      </button>
+                      {u.active && (
+                        <button onClick={() => handleDeactivate(u)} style={{ ...iconBtn, padding: '7px 12px', fontSize: 12, color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <UserX size={12} /> Deactivate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['ID', 'Username', 'Role', 'Assignment', 'Status', 'Created', 'Actions'].map(h => (
+                  {['ID', 'Username', 'Role', 'Email', 'Status', 'Created', 'Actions'].map(h => (
                     <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', background: 'var(--surface-2)' }}>{h}</th>
                   ))}
                 </tr>
@@ -227,9 +275,6 @@ export default function UsersView() {
               <tbody>
                 {rows.map(u => {
                   const inactive = !u.active
-                  const assignment = u.role === 'ground_staff' && u.checkpoint
-                    ? u.checkpoint.replace('_', ' ')
-                    : '—'
 
                   return (
                     <tr key={u.id} style={{
@@ -240,7 +285,7 @@ export default function UsersView() {
                       <td style={td}><span style={{ fontFamily: 'monospace', color: 'var(--muted-2)' }}>#{u.id}</span></td>
                       <td style={td}><span style={{ fontWeight: 600, color: 'var(--text)' }}>{u.username}</span></td>
                       <td style={td}><RoleChip role={u.role} /></td>
-                      <td style={td}><span style={{ color: 'var(--muted-2)' }}>{assignment}</span></td>
+                      <td style={{ ...td, color: 'var(--muted-2)' }}>{u.email || '—'}</td>
                       <td style={td}>
                         {u.active
                           ? <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--success)', fontSize: 12 }}><CheckCircle size={12} /> Active</span>

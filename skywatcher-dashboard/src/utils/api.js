@@ -29,15 +29,21 @@ api.interceptors.response.use(
 // ── Staff / Admin endpoints ──────────────────────────────────
 export const fetchBags       = ()       => api.get('/bags').then(r => r.data)
 export const fetchBagHistory = (tagId)  => api.get(`/bags/${tagId}/history`).then(r => r.data)
+export const fetchBagStatusHistory = (tagId) => api.get(`/bags/${tagId}/status-history`).then(r => r.data)
+export const registerScan    = (tagId, payload) => api.post(`/bags/${tagId}/scan`, payload).then(r => r.data)
+export const bagAction       = (tagId, action)  => api.post(`/bags/${tagId}/action`, { action }).then(r => r.data)
 export const fetchAlerts     = (limit = 50) => api.get(`/alerts?limit=${limit}`).then(r => r.data)
 export const fetchStats      = ()       => api.get('/stats').then(r => r.data)
-export const fetchFlights    = ()       => api.get('/flights').then(r => r.data)
+export const fetchFlights      = ()                    => api.get('/flights').then(r => r.data)
+export const setFlightCarousel = (flightId, carousel) => api.put(`/flights/${encodeURIComponent(flightId)}/carousel`, { carousel }).then(r => r.data)
 export const resolveAlert    = (id)     => api.patch(`/alerts/${id}/resolve`).then(r => r.data)
 
 // ── Auth endpoints ───────────────────────────────────────────
 export const login  = (username, password) => api.post('/auth/login', { username, password }).then(r => r.data)
 export const logout = ()                   => api.post('/auth/logout').then(r => r.data)
-export const getMe  = ()                   => api.get('/auth/me').then(r => r.data)
+export const getMe          = ()                   => api.get("/auth/me").then(r => r.data)
+export const forgotPassword = (email)              => api.post("/auth/forgot-password", { email }).then(r => r.data)
+export const resetPassword  = (token, password)    => api.post("/auth/reset-password", { token, password }).then(r => r.data)
 
 // ── Admin user management ────────────────────────────────────
 export const fetchUsers     = ()         => api.get('/admin/users').then(r => r.data)
@@ -53,7 +59,32 @@ export const fetchAvgResolution     = () => api.get('/stats/avg-resolution').the
 export const fetchCheckpointHeatmap = () => api.get('/stats/checkpoint-heatmap').then(r => r.data)
 
 // ── Public passenger tracking (no auth) ──────────────────────
+export const trackByBookingRef = (bookingRef) =>
+  api.get(`/track?booking_ref=${encodeURIComponent(bookingRef)}`).then(r => r.data)
 export const trackBag = (flightId, passenger) =>
   api.get(`/track?flight_id=${encodeURIComponent(flightId)}&passenger=${encodeURIComponent(passenger)}`).then(r => r.data)
+export const subscribeArrival = (tagId, email) =>
+  api.post('/track/notify', { tag_id: tagId, email }).then(r => r.data)               // public
+export const genBookingRef = () =>
+  api.get('/admin/booking-ref').then(r => r.data.booking_ref)
+
+// ── Checkpoint advisories ────────────────────────────────────
+export const fetchAdvisories        = (all = false) =>
+  api.get(`/advisories${all ? '?all=true' : ''}`).then(r => r.data)
+export const setAdvisory            = (checkpoint, data) =>
+  api.put(`/advisories/${checkpoint}`, data).then(r => r.data)
+export const requestAdvisory        = (data) =>
+  api.post('/advisories/request', data).then(r => r.data)
+export const fetchAdvisoryRequests  = (status) =>
+  api.get(`/advisories/requests${status ? `?status=${status}` : ''}`).then(r => r.data)
+export const approveAdvisoryRequest = (id) =>
+  api.put(`/advisories/requests/${id}/approve`).then(r => r.data)
+export const rejectAdvisoryRequest  = (id) =>
+  api.put(`/advisories/requests/${id}/reject`).then(r => r.data)
+
+// ── Customer feedback ────────────────────────────────────────
+export const submitFeedback = (data)         => api.post('/feedback', data).then(r => r.data)        // public
+export const fetchFeedback  = (limit = 100)  => api.get(`/feedback?limit=${limit}`).then(r => r.data) // staff/admin
+export const updateFeedback = (id, data)     => api.patch(`/feedback/${id}`, data).then(r => r.data)  // staff/admin
 
 export default api

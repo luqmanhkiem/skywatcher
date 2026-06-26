@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { ArrowRight, WifiOff, Activity } from 'lucide-react'
-import { usePolling }  from '../hooks/usePolling'
-import { fetchBags }   from '../utils/api'
+import { usePolling }        from '../hooks/usePolling'
+import { fetchBags, fetchAdvisories } from '../utils/api'
 import PageHeader      from '../components/PageHeader'
 import StatusBadge     from '../components/StatusBadge'
 
@@ -14,6 +14,11 @@ const CP_META = {
   loading:  { label: 'Loading',   color: '#F97316' },
   arrival:  { label: 'Arrival',   color: '#00CC7D' },
 }
+
+const EXCEPTION_STATES = ['FLAGGED', 'MISROUTED', 'HELD', 'LOST']
+const ARRIVED_STATES = ['ARRIVED', 'CLAIMED', 'arrived']
+const IN_TRANSIT_STATES = ['REGISTERED', 'SCREENED', 'SORTED', 'LOADED', 'in_transit']
+
 
 function parseISO(iso) {
   if (!iso) return null
@@ -30,7 +35,8 @@ function timeAgo(iso) {
 }
 
 function Dot({ bag, color, isActive, onEnter, onLeave }) {
-  const isAnomaly = bag.status !== 'arrived' && bag.status !== 'in_transit'
+  const isAnomaly = EXCEPTION_STATES.includes(bag.status)
+  const isArrived = ARRIVED_STATES.includes(bag.status)
   return (
     <div
       onMouseEnter={onEnter}
@@ -42,7 +48,7 @@ function Dot({ bag, color, isActive, onEnter, onLeave }) {
       style={{
         width: 28, height: 28,
         borderRadius: '50%',
-        background: bag.status === 'arrived' ? '#22c55e' : color,
+        background: isArrived ? '#22c55e' : color,
         border: isActive
           ? `2px solid #fff`
           : isAnomaly
@@ -93,15 +99,21 @@ export default function LiveMap() {
   const { data, loading, error } = usePolling(fn, 3000)
   const [hovered, setHovered] = useState(null)
 
+  const advisoryFn = useCallback(() => fetchAdvisories(true), [])
+  const { data: advisoryData } = usePolling(advisoryFn, 10000)
+  const advisoryMap = Object.fromEntries(
+    (advisoryData?.advisories ?? []).map(a => [a.checkpoint, a.level])
+  )
+
   const bags    = data?.bags ?? []
   const grouped = CHECKPOINTS.reduce((acc, cp) => {
     acc[cp] = bags.filter(b => b.last_checkpoint === cp)
     return acc
   }, {})
 
-  const inTransit  = bags.filter(b => b.status === 'in_transit').length
-  const arrived    = bags.filter(b => b.status === 'arrived').length
-  const anomalies  = bags.filter(b => b.status !== 'arrived' && b.status !== 'in_transit').length
+  const inTransit  = bags.filter(b => IN_TRANSIT_STATES.includes(b.status)).length
+  const arrived    = bags.filter(b => ARRIVED_STATES.includes(b.status)).length
+  const anomalies  = bags.filter(b => EXCEPTION_STATES.includes(b.status)).length
 
   const isLive = !loading && !error
 
@@ -174,11 +186,14 @@ export default function LiveMap() {
           const { label, color } = CP_META[cp]
           const bgs = grouped[cp]
           const isLast = idx === CHECKPOINTS.length - 1
+          const advisory = advisoryMap[cp]  // 'down' | 'degraded' | undefined
 
           return (
             <div key={cp} style={{ flex: 1, display: 'flex', alignItems: 'stretch', minWidth: 0 }}>
               {/* Column card */}
-              <div style={{
+              <div
+                className={advisory === 'down' ? 'advisory-down' : advisory === 'degraded' ? 'advisory-degraded' : ''}
+                style={{
                 flex: 1,
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
@@ -192,22 +207,32 @@ export default function LiveMap() {
                 {/* Column header */}
                 <div style={{
                   padding: '11px 13px',
-                  borderBottom: `2px solid ${color}`,
-                  background: color + '0d',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  borderBottom: `2px solid ${advisory === 'down' ? 'var(--danger)' : advisory === 'degraded' ? 'var(--warning)' : color}`,
+                  background: advisory === 'down' ? 'rgba(220,38,38,0.07)' : advisory === 'degraded' ? 'rgba(234,88,12,0.07)' : color + '0d',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4,
                 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)' }}>
                     {label}
                   </span>
-                  <span style={{
-                    background: color + '25',
-                    color: color,
-                    fontSize: 11, fontWeight: 700,
-                    borderRadius: 8, padding: '1px 7px',
-                    minWidth: 20, textAlign: 'center',
-                  }}>
-                    {bgs.length}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    {advisory && advisory !== 'operational' && (
+                      <span style={{
+                        fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
+                        textTransform: 'uppercase', letterSpacing: '0.08em',
+                        color: advisory === 'down' ? 'var(--danger)' : 'var(--warning)',
+                        background: advisory === 'down' ? 'rgba(220,38,38,0.15)' : 'rgba(234,88,12,0.15)',
+                        borderRadius: 4, padding: '2px 5px',
+                      }}>{advisory}</span>
+                    )}
+                    <span style={{
+                      background: color + '25', color: color,
+                      fontSize: 11, fontWeight: 700,
+                      borderRadius: 8, padding: '1px 7px',
+                      minWidth: 20, textAlign: 'center',
+                    }}>
+                      {bgs.length}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Dots area */}
@@ -281,6 +306,11 @@ export default function LiveMap() {
             <InfoCell label="Passenger">
               {hovered.passenger || <span style={{ color: 'var(--muted)' }}>—</span>}
             </InfoCell>
+            {hovered.booking_ref && (
+              <InfoCell label="Booking Ref">
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 12 }}>{hovered.booking_ref}</span>
+              </InfoCell>
+            )}
             <InfoCell label="Flight">
               <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--success)', fontWeight: 600, fontSize: 12 }}>{hovered.flight_id}</span>
             </InfoCell>

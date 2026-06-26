@@ -5,7 +5,8 @@ import {
   LineChart, Line,
 } from 'recharts'
 import { Activity, AlertTriangle, XCircle, Radio, Clock } from 'lucide-react'
-import { usePolling } from '../hooks/usePolling'
+import { usePolling }  from '../hooks/usePolling'
+import { useIsMobile } from '../hooks/useIsMobile'
 import {
   fetchStats, fetchAlerts,
   fetchAnomalyTrend, fetchFlightAnomalies,
@@ -120,6 +121,7 @@ function ChartBox({ title, children, empty, emptyMsg, loading }) {
 }
 
 export default function StatsView() {
+  const isMobile     = useIsMobile()
   const statsFn      = useCallback(() => fetchStats(), [])
   const alertsFn     = useCallback(() => fetchAlerts(500), [])
   const trendFn      = useCallback(() => fetchAnomalyTrend(), [])
@@ -250,7 +252,7 @@ export default function StatsView() {
         )}
 
         {/* ── Charts grid ───────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: anomalyCounts.length > 0 ? '1fr 1fr' : '1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (anomalyCounts.length > 0 ? '1fr 1fr' : '1fr'), gap: 16 }}>
 
           <ChartBox
             title="Events per Checkpoint"
@@ -330,7 +332,7 @@ export default function StatsView() {
         )}
 
         {/* ── Trend + Flight anomalies ───────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
           <ChartBox
             title="Anomaly Trend (last 14 days)"
             empty={trendRows.length === 0}

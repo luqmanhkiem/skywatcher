@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from models.database import insert_event
 from models.anomaly import detect_anomaly, store_anomaly
+from notifier import notify_anomaly
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
@@ -32,6 +33,8 @@ def on_message(client, userdata, msg):
         if anomaly:
             store_anomaly(anomaly)
             print(f'[ANOMALY] {anomaly["type"]} detected for bag {payload.get("tag_id")}')
+            # Email the ops team for critical anomalies (no-op if SMTP unconfigured)
+            notify_anomaly(anomaly)
 
     except Exception as e:
         print(f'[MQTT] Error processing message: {e}')
