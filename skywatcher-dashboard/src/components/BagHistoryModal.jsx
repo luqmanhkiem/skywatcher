@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   X, Clock, Tag, Plane, Printer, ScanLine, ArrowRight,
   PauseCircle, PlayCircle, Shuffle, CheckCircle2, AlertTriangle, PackageCheck,
@@ -165,7 +166,9 @@ export default function BagHistoryModal({ tagId, passenger, flightId, status, on
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  return (
+  // Rendered into <body> via a portal so no ancestor's overflow, transform or
+  // stacking context can clip the dialog.
+  return createPortal(
     <div
       onClick={onClose}
       style={{
@@ -175,7 +178,8 @@ export default function BagHistoryModal({ tagId, passenger, flightId, status, on
         WebkitBackdropFilter: 'blur(4px)',
         zIndex: 100,
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        padding: '40px 24px',
+        // Shrinks on short viewports so the dialog keeps as much height as possible.
+        padding: 'clamp(12px, 4vh, 40px) 16px',
         overflowY: 'auto',
       }}
     >
@@ -189,7 +193,9 @@ export default function BagHistoryModal({ tagId, passenger, flightId, status, on
           borderRadius: 12,
           width: '100%',
           maxWidth: 580,
-          maxHeight: 'calc(100vh - 80px)',
+          // dvh tracks the *visible* viewport (mobile browser chrome), and the
+          // padding above is subtracted so the dialog never overflows the screen.
+          maxHeight: 'calc(100dvh - clamp(24px, 8vh, 80px))',
           overflowY: 'auto',
           boxShadow: '0 24px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
         }}
@@ -202,6 +208,12 @@ export default function BagHistoryModal({ tagId, passenger, flightId, status, on
           alignItems: 'flex-start',
           gap: 14,
           flexShrink: 0,
+          // Keeps the tag ID, status and close button visible while the
+          // body scrolls on short screens.
+          position: 'sticky',
+          top: 0,
+          background: 'var(--surface)',
+          zIndex: 2,
         }}>
           <div style={{
             width: 38, height: 38, borderRadius: 9,
@@ -616,6 +628,7 @@ export default function BagHistoryModal({ tagId, passenger, flightId, status, on
           })}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
