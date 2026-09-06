@@ -113,7 +113,8 @@ if __name__ == '__main__':
     mqtt_thread.start()
     print('[SkyWatcher] MQTT client started.')
 
-    port = int(os.getenv('FLASK_PORT', 5000))
+    # Render (and most PaaS) inject the port to bind on via $PORT.
+    port = int(os.getenv('PORT', os.getenv('FLASK_PORT', 5000)))
     debug = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
     print(f'[SkyWatcher] Flask running on http://localhost:{port}')
     app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)

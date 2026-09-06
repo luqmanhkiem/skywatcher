@@ -22,6 +22,16 @@ __pycache__/
 skywatcher-dashboard/node_modules/
 skywatcher-dashboard/dist/
 
+# Flutter / Dart (generated build artifacts — never commit)
+skywatcher-mobile/build/
+skywatcher-mobile/.dart_tool/
+skywatcher-mobile/.flutter-plugins
+skywatcher-mobile/.flutter-plugins-dependencies
+skywatcher-mobile/ios/Flutter/ephemeral/
+skywatcher-mobile/ios/Pods/
+skywatcher-mobile/android/.gradle/
+skywatcher-mobile/**/*.dSYM/
+
 # macOS
 .DS_Store
 

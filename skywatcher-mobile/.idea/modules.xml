@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/skywatcher_mobile.iml" filepath="$PROJECT_DIR$/skywatcher_mobile.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/skywatcher_mobile_android.iml" filepath="$PROJECT_DIR$/android/skywatcher_mobile_android.iml" />
+    </modules>
+  </component>
+</project>

@@ -12,6 +12,11 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 MQTT_HOST = os.getenv('MQTT_HOST', 'localhost')
 MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
 MQTT_TOPIC = os.getenv('MQTT_TOPIC', 'baggage/events')
+# Cloud brokers (e.g. HiveMQ Cloud) require credentials + TLS. These stay unset
+# for a local Mosquitto broker, so local development is unaffected.
+MQTT_USER = os.getenv('MQTT_USER')
+MQTT_PASS = os.getenv('MQTT_PASS')
+MQTT_USE_TLS = os.getenv('MQTT_USE_TLS', 'false').lower() == 'true'
 
 
 def on_connect(client, userdata, flags, reason_code, properties=None):
@@ -49,6 +54,12 @@ def start_mqtt_client():
     client.on_connect = on_connect
     client.on_message = on_message
     client.on_disconnect = on_disconnect
+
+    # Authentication + TLS for cloud brokers (no-op for local Mosquitto).
+    if MQTT_USER:
+        client.username_pw_set(MQTT_USER, MQTT_PASS)
+    if MQTT_USE_TLS:
+        client.tls_set()
 
     try:
         client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)

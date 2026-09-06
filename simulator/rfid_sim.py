@@ -20,6 +20,18 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 MQTT_HOST = os.getenv('MQTT_HOST', 'localhost')
 MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
 MQTT_TOPIC = os.getenv('MQTT_TOPIC', 'baggage/events')
+# Credentials + TLS for cloud brokers (unset for local Mosquitto).
+MQTT_USER = os.getenv('MQTT_USER')
+MQTT_PASS = os.getenv('MQTT_PASS')
+MQTT_USE_TLS = os.getenv('MQTT_USE_TLS', 'false').lower() == 'true'
+
+
+def configure_mqtt(client: 'mqtt.Client') -> None:
+    """Apply username/password and TLS when connecting to a cloud broker."""
+    if MQTT_USER:
+        client.username_pw_set(MQTT_USER, MQTT_PASS)
+    if MQTT_USE_TLS:
+        client.tls_set()
 
 CHECKPOINTS = ['check_in', 'security', 'sorting', 'loading', 'arrival']
 
@@ -161,6 +173,7 @@ def simulate_one_bag(
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     client.on_connect = on_connect
+    configure_mqtt(client)
     client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
     client.loop_start()
     time.sleep(1)  # broker handshake
@@ -196,6 +209,7 @@ def main():
     client.on_connect = on_connect
 
     print(f'[SIM] Connecting to {MQTT_HOST}:{MQTT_PORT}...')
+    configure_mqtt(client)
     client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
     client.loop_start()
 
