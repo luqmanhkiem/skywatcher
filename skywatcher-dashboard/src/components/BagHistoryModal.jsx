@@ -63,7 +63,7 @@ function fmtDate(iso) {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export default function BagHistoryModal({ tagId, passenger, flightId, status, onClose }) {
+export default function BagHistoryModal({ tagId, passenger, flightId, status, bookingRef, onClose }) {
   const fn = useCallback(() => fetchBagHistory(tagId), [tagId])
   const { data, loading, refresh } = usePolling(fn, 5000)
   const events = data?.events ?? []
@@ -128,8 +128,13 @@ export default function BagHistoryModal({ tagId, passenger, flightId, status, on
     }
   }
 
-  // Public tracking URL encoded in the QR — PublicTrack reads `flight` + `passenger`
-  const trackUrl = `${window.location.origin}/track?flight=${encodeURIComponent(flightId ?? '')}&passenger=${encodeURIComponent(passenger ?? '')}`
+  // Public tracking URL encoded in the QR. PublicTrack runs the lookup on load
+  // when it receives `ref`, so scanning a bag tag opens that bag's tracking page
+  // directly with nothing to type. Bags with no booking reference fall back to
+  // the flight + passenger form, which the passenger completes manually.
+  const trackUrl = bookingRef
+    ? `${window.location.origin}/track?ref=${encodeURIComponent(bookingRef)}`
+    : `${window.location.origin}/track?flight=${encodeURIComponent(flightId ?? '')}&passenger=${encodeURIComponent(passenger ?? '')}`
 
   // Print a physical bag tag: pop a minimal window with the QR + bag details
   function printTag() {

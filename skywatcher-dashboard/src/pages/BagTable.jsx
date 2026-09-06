@@ -340,6 +340,7 @@ export default function BagTable() {
           passenger={selected.passenger}
           flightId={selected.flight_id}
           status={selected.status}
+          bookingRef={selected.booking_ref}
           onClose={() => setSelected(null)}
         />
       )}
