@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timezone
+from functools import lru_cache
 from typing import Optional
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -20,8 +21,23 @@ CHECKPOINTS = ['check_in', 'security', 'sorting', 'loading', 'arrival']
 STALL_THRESHOLD = float(os.getenv('ANOMALY_STALL_THRESHOLD_MINUTES', 20))
 
 
-def get_db() -> Client:
+@lru_cache(maxsize=1)
+def _create_client() -> Client:
+    """Build the Supabase client once (see get_db)."""
     return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+
+def get_db() -> Client:
+    """
+    Return a shared Supabase client.
+
+    The client is created once and reused for the lifetime of the process.
+    Previously a new client (and therefore a new HTTP connection pool) was
+    built on every call; with ~5 calls per baggage scan this dominated the
+    end-to-end request latency. Reusing one client also lets keep-alive
+    connections be reused across queries.
+    """
+    return _create_client()
 
 
 def init_db():
