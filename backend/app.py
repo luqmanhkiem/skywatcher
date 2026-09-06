@@ -94,7 +94,13 @@ def _stall_checker():
 
 @app.route('/api/health')
 def health():
-    return {'status': 'ok', 'service': 'SkyWatcher API'}
+    """Liveness probe. `commit` identifies the deployed build (Render sets
+    RENDER_GIT_COMMIT), which makes it possible to confirm a deploy landed."""
+    return {
+        'status': 'ok',
+        'service': 'SkyWatcher API',
+        'commit': (os.getenv('RENDER_GIT_COMMIT') or 'local')[:7],
+    }
 
 
 # Start background stall checker regardless of how Flask is invoked
