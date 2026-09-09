@@ -63,6 +63,10 @@ def ingest_event():
             'description': fsm_a['description'],
         }
         store_anomaly(a)
+        # Device-fed events raise anomalies too, so they must alert staff just
+        # like an operator scan does; without this the HTTP ingestion path
+        # detected anomalies silently.
+        notify_anomaly(a)
         stored_anomalies.append(a)
 
     return jsonify({'status': 'ok', 'tag_id': payload['tag_id'], 'anomalies': stored_anomalies}), 201
