@@ -31,12 +31,30 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   /// Resolve a scanned/typed value to a known tag id.
-  /// Bag-tag QR encodes `…/track?flight=…&passenger=…`; match that to a bag.
+  /// Current bag-tag QR encodes `…/track?ref=<booking_ref>`; older printed tags
+  /// encode `…/track?flight=…&passenger=…`. Both are matched against the
+  /// loaded bag list, and a plain tag id typed by hand also works.
   String? _resolveTag(String raw) {
     raw = raw.trim();
     if (raw.isEmpty) return null;
 
     final uri = Uri.tryParse(raw);
+
+    // Current format: ?ref=<booking_ref>
+    if (uri != null && uri.queryParameters.containsKey('ref')) {
+      final ref = (uri.queryParameters['ref'] ?? '').trim().toLowerCase();
+      if (ref.isNotEmpty) {
+        for (final b in widget.bags) {
+          final m = b as Map<String, dynamic>;
+          if ((m['booking_ref'] ?? '').toString().toLowerCase() == ref) {
+            return m['tag_id']?.toString();
+          }
+        }
+      }
+      return null; // a track URL, but no matching bag is loaded
+    }
+
+    // Legacy format: ?flight=…&passenger=…
     if (uri != null &&
         (uri.queryParameters.containsKey('flight') ||
             uri.queryParameters.containsKey('flight_id'))) {
@@ -64,7 +82,10 @@ class _ScanScreenState extends State<ScanScreen> {
         return m['tag_id']?.toString();
       }
     }
-    return raw; // best-effort
+    // Never treat a URL as a tag id; that produces a bogus /bags/<url>/history
+    // request and a confusing HTTP 404.
+    if (uri != null && uri.hasScheme) return null;
+    return raw; // best-effort: a hand-typed tag id
   }
 
   void _onDetect(BarcodeCapture capture) {

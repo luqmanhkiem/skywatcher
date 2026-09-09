@@ -8,10 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///   • Real iPhone / iOS simulator on the same Wi-Fi → your Mac's LAN IP
 ///   • Android emulator                              → 10.0.2.2 (host alias)
 ///
-/// Default: real iPhone → your Mac's LAN IP (phone + Mac must share the same Wi-Fi).
-const String kBaseUrl = 'http://10.131.79.98:5001/api'; // ← Mac LAN IP (re-check with `ipconfig getifaddr en0`)
-// const String kBaseUrl = 'http://localhost:5001/api';  // ← iOS Simulator
-// const String kBaseUrl = 'http://10.0.2.2:5001/api';   // ← Android emulator
+/// Default: the deployed API on Render, so the phone works on any network
+/// (campus Wi-Fi or cellular) without the Mac running a local server.
+const String kBaseUrl = 'https://skywatcher-api.onrender.com/api'; // ← deployed backend
+// const String kBaseUrl = 'http://192.168.1.8:5001/api'; // ← local Flask via Mac LAN IP (`ipconfig getifaddr en0`)
+// const String kBaseUrl = 'http://localhost:5001/api';   // ← iOS Simulator
+// const String kBaseUrl = 'http://10.0.2.2:5001/api';    // ← Android emulator
 
 const String _tokenKey = 'sw_token';
 
