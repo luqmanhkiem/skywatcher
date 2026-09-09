@@ -114,7 +114,7 @@ export default function PublicTrack() {
 
   async function submitNotify(e) {
     if (e) e.preventDefault()
-    const tag = result?.bag?.tag_id
+    const tag = activeResult?.bag?.tag_id
     // Browser autofill sets the DOM value without firing onChange, so React
     // state can be empty while the field visibly holds an address. Trust the
     // input itself and fall back to state.
