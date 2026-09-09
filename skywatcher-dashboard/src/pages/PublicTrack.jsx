@@ -48,6 +48,7 @@ export default function PublicTrack() {
   const [loading,  setLoading]    = useState(false)
   const [error,    setError]      = useState('')
   const [notifyEmail, setNotifyEmail] = useState('')
+  const notifyRef = useRef(null)
   const [notifyMsg,   setNotifyMsg]   = useState(null)
   const [activeIdx, setActiveIdx] = useState(0)   // which bag is shown when multi-bag
   const intervalRef = useRef(null)
@@ -114,11 +115,20 @@ export default function PublicTrack() {
   async function submitNotify(e) {
     if (e) e.preventDefault()
     const tag = result?.bag?.tag_id
-    if (!tag || !notifyEmail.trim()) return
+    // Browser autofill sets the DOM value without firing onChange, so React
+    // state can be empty while the field visibly holds an address. Trust the
+    // input itself and fall back to state.
+    const email = (notifyRef.current?.value ?? notifyEmail).trim()
+    if (!tag) return
+    if (!email) {
+      setNotifyMsg({ kind: 'err', text: 'Please enter your email address.' })
+      return
+    }
     try {
-      await subscribeArrival(tag, notifyEmail.trim())
+      await subscribeArrival(tag, email)
       setNotifyMsg({ kind: 'ok', text: "You're set. We'll email you when your bag arrives." })
       setNotifyEmail('')
+      if (notifyRef.current) notifyRef.current.value = ''
     } catch (err) {
       setNotifyMsg({ kind: 'err', text: err.response?.data?.error || 'Could not subscribe. Try again.' })
     }
@@ -550,6 +560,7 @@ export default function PublicTrack() {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <input
                     type="email"
+                    ref={notifyRef}
                     value={notifyEmail}
                     onChange={e => setNotifyEmail(e.target.value)}
                     placeholder="you@email.com"
@@ -566,13 +577,11 @@ export default function PublicTrack() {
                   />
                   <button
                     type="submit"
-                    disabled={!notifyEmail.trim()}
                     style={{
                       background: 'var(--lt-cta)', color: 'var(--lt-cta-fg)',
                       border: 'none', borderRadius: 12, padding: '0 22px',
                       fontFamily: 'var(--lt-font)', fontWeight: 600, fontSize: 14,
-                      cursor: notifyEmail.trim() ? 'pointer' : 'default',
-                      opacity: notifyEmail.trim() ? 1 : 0.45, whiteSpace: 'nowrap',
+                      cursor: 'pointer', whiteSpace: 'nowrap',
                     }}
                   >
                     Notify me

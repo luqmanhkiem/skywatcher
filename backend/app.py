@@ -96,10 +96,14 @@ def _stall_checker():
 def health():
     """Liveness probe. `commit` identifies the deployed build (Render sets
     RENDER_GIT_COMMIT), which makes it possible to confirm a deploy landed."""
+    # 'smtp' reports only whether mail is configured (never any credential),
+    # so a missing SMTP setup can be diagnosed without reading the deploy env.
+    smtp_ready = all(os.getenv(k) for k in ('SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'))
     return {
         'status': 'ok',
         'service': 'SkyWatcher API',
         'commit': (os.getenv('RENDER_GIT_COMMIT') or 'local')[:7],
+        'smtp': 'configured' if smtp_ready else 'not configured',
     }
 
 
