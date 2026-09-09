@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { Plus, Edit2, UserX, CheckCircle, XCircle } from 'lucide-react'
 import { usePolling }  from '../hooks/usePolling'
@@ -30,12 +31,14 @@ function RoleChip({ role }) {
 }
 
 function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error }) {
-  return (
+  // Rendered into <body> so no ancestor's overflow or stacking context clips it.
+  return createPortal(
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       background: 'rgba(15,15,15,0.45)', backdropFilter: 'blur(4px)',
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-      overflowY: 'auto', padding: '40px 16px',
+      // Shrinks on short viewports so the dialog keeps as much height as possible.
+      overflowY: 'auto', padding: 'clamp(12px, 4vh, 40px) 16px',
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: 'var(--surface)',
@@ -45,7 +48,7 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
         padding: '28px 28px 24px',
         width: '100%',
         maxWidth: 440,
-        maxHeight: 'calc(100vh - 80px)',
+        maxHeight: 'calc(100dvh - clamp(24px, 8vh, 80px))',
         overflowY: 'auto',
         flexShrink: 0,
         boxShadow: '0 24px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
@@ -120,7 +123,8 @@ function Modal({ title, form, setForm, onSave, onClose, isEdit, saving, error })
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
