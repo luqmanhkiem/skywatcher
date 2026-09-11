@@ -1,10 +1,10 @@
 """
-Bag State Machine — SkyWatcher
+Bag State Machine - SkyWatcher
 
 A bag's tracking status is a finite state machine (FSM). Every transition is
 triggered by an *input* (a checkpoint scan or an operator action) and gated by a
 *guard* (a validation rule). Illegal inputs are either rejected
-(``InvalidTransition``) or routed to an exception state — this is the
+(``InvalidTransition``) or routed to an exception state - this is the
 "processing" step the project demonstrates.
 
 This module is **pure**: no database, no network, no Flask. The DB layer
@@ -21,7 +21,7 @@ Public API:
 from typing import Optional
 
 
-# ── Checkpoints (strict order — mirrors CLAUDE.md "Checkpoint flow") ──────────
+# ── Checkpoints (strict order - mirrors CLAUDE.md "Checkpoint flow") ──────────
 
 CHECKPOINTS = ['check_in', 'security', 'sorting', 'loading', 'arrival']
 CHECKPOINT_ORDER = {cp: i for i, cp in enumerate(CHECKPOINTS)}
@@ -46,7 +46,7 @@ EXCEPTION_STATES = ['FLAGGED', 'MISROUTED', 'HELD', 'LOST']
 
 STATES = HAPPY_SEQUENCE + EXCEPTION_STATES
 
-# Category per state — used by the dashboard/mobile to pick a badge colour.
+# Category per state - used by the dashboard/mobile to pick a badge colour.
 STATE_CATEGORY = {
     'REGISTERED': 'active', 'SCREENED': 'active', 'SORTED': 'active',
     'LOADED': 'active', 'ARRIVED': 'success', 'CLAIMED': 'success',
@@ -168,7 +168,7 @@ def _decide_scan(current_status: Optional[str], checkpoint: str, context: dict):
     can produce multiple anomaly records (e.g. a bag that stalled AND skipped
     security will generate both STALL and SECURITY_BYPASS).
 
-    Returns (new_status, [anomaly, ...]) — the list may be empty.
+    Returns (new_status, [anomaly, ...]) - the list may be empty.
     """
     if current_status in TERMINAL_STATES:
         raise InvalidTransition(current_status, checkpoint)
@@ -185,7 +185,7 @@ def _decide_scan(current_status: Optional[str], checkpoint: str, context: dict):
     anomalies = []
     exception_status = None  # track the worst exception state found
 
-    # 1. STALL — dwell exceeded the threshold.
+    # 1. STALL - dwell exceeded the threshold.
     if duration >= threshold:
         anomalies.append(_anomaly(
             'STALL', checkpoint,
@@ -194,7 +194,7 @@ def _decide_scan(current_status: Optional[str], checkpoint: str, context: dict):
         ))
         exception_status = 'FLAGGED'
 
-    # 2. SECURITY_BYPASS — only fire on the *first* checkpoint that requires
+    # 2. SECURITY_BYPASS - only fire on the *first* checkpoint that requires
     #    security (sorting). If sorting is already visited, the bypass was
     #    already caught there; don't re-alert on every downstream checkpoint.
     if (cp_idx >= CHECKPOINT_ORDER['sorting']
@@ -206,7 +206,7 @@ def _decide_scan(current_status: Optional[str], checkpoint: str, context: dict):
         ))
         exception_status = 'FLAGGED'
 
-    # 3. WRONG_ROUTE — out of expected sequence (checked after safety anomalies).
+    # 3. WRONG_ROUTE - out of expected sequence (checked after safety anomalies).
     if cp_idx != expected_idx and cp_idx != prev_idx:
         anomalies.append(_anomaly(
             'WRONG_ROUTE', checkpoint,

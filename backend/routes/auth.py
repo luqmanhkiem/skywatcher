@@ -90,7 +90,7 @@ def me():
 
 @auth_bp.route('/auth/logout', methods=['POST'])
 def logout():
-    """JWT is stateless — client removes the token from localStorage."""
+    """JWT is stateless - client removes the token from localStorage."""
     return jsonify({'status': 'ok'})
 
 
@@ -118,7 +118,7 @@ def forgot_password():
         except Exception as exc:
             print(f'[AUTH] Password reset email failed: {exc}')
 
-    # Always return 200 — don't reveal whether the email is registered
+    # Always return 200 - don't reveal whether the email is registered
     return jsonify({'status': 'ok',
                     'message': 'If that email is registered you will receive a reset link shortly.'}), 200
 

@@ -40,7 +40,7 @@ baggage_bp = Blueprint('baggage', __name__)
 
 
 # ---------------------------------------------------------------------------
-# Internal / machine-to-machine — no auth required (MQTT bridge + simulator)
+# Internal / machine-to-machine - no auth required (MQTT bridge + simulator)
 # ---------------------------------------------------------------------------
 
 @baggage_bp.route('/events', methods=['POST'])
@@ -81,7 +81,7 @@ def ingest_event():
 def list_bags():
     """
     Return all bags with current status and last checkpoint.
-    Staff are uniform — all roles see every bag (no per-checkpoint filter).
+    Staff are uniform - all roles see every bag (no per-checkpoint filter).
     """
     bags = get_all_bags()
     return jsonify({'bags': bags, 'count': len(bags)})
@@ -98,7 +98,7 @@ def bag_history(tag_id):
 
 
 # ---------------------------------------------------------------------------
-# State machine — operator scans & actions (real, unscripted input)
+# State machine - operator scans & actions (real, unscripted input)
 # ---------------------------------------------------------------------------
 
 @baggage_bp.route('/bags/<tag_id>/scan', methods=['POST'])
@@ -110,7 +110,7 @@ def register_scan(tag_id):
     feed, but stamped with the operator as the actor.
 
     Body: {"checkpoint": "security"}
-    Staff are uniform — any staff/admin may scan any bag at any checkpoint.
+    Staff are uniform - any staff/admin may scan any bag at any checkpoint.
     """
     body       = request.get_json(silent=True) or {}
     checkpoint = (body.get('checkpoint') or '').strip()
@@ -218,11 +218,11 @@ def set_flight_carousel(flight_id):
 
 
 # ---------------------------------------------------------------------------
-# Public passenger tracking — no login required
+# Public passenger tracking - no login required
 # ---------------------------------------------------------------------------
 
 # Passenger-friendly anomaly wording. PRIVACY: never expose internal type names
-# (especially "security bypass") on this public surface — passengers see a
+# (especially "security bypass") on this public surface - passengers see a
 # neutral "additional check" message; staff still see the real type elsewhere.
 _FRIENDLY = {
     'STALL':           ('Your bag is taking a little longer than usual at {cp}. '
@@ -291,7 +291,7 @@ def _compute_eta(bag: dict, status: str, anomalies: list, has_advisory: bool):
     remaining = sum(durations.get(cp, 5.0) for cp in _remaining_checkpoints(last_cp))
 
     # Widen the estimate when the bag is delayed (stall/flag) or a checkpoint
-    # ahead is degraded — add one extra expected dwell as a simple buffer.
+    # ahead is degraded - add one extra expected dwell as a simple buffer.
     delayed = has_advisory or status == 'FLAGGED' or any(
         a.get('type') == 'STALL' for a in anomalies)
     if delayed:
@@ -309,7 +309,7 @@ def _compute_eta(bag: dict, status: str, anomalies: list, has_advisory: bool):
 @baggage_bp.route('/track', methods=['GET'])
 def public_track():
     """
-    Public bag lookup — no auth required.
+    Public bag lookup - no auth required.
     Primary:  ?booking_ref=ABC123  → returns all bags for that booking (handles
               passengers with multiple bags).
     Fallback: ?flight_id=MH370&passenger=Ahmad  → original single-bag lookup.
@@ -361,7 +361,7 @@ def public_track():
 
 
 # ---------------------------------------------------------------------------
-# Checkpoint advisories — operator-declared service status
+# Checkpoint advisories - operator-declared service status
 # ---------------------------------------------------------------------------
 
 @baggage_bp.route('/advisories', methods=['GET'])
@@ -393,7 +393,7 @@ def set_advisory(checkpoint):
 
 
 # ---------------------------------------------------------------------------
-# Advisory requests — staff propose, admin approves
+# Advisory requests - staff propose, admin approves
 # ---------------------------------------------------------------------------
 
 @baggage_bp.route('/advisories/request', methods=['POST'])
@@ -428,7 +428,7 @@ def list_advisory_requests():
 @baggage_bp.route('/advisories/requests/<int:req_id>/approve', methods=['PUT'])
 @token_required('admin')
 def approve_advisory_request(req_id):
-    """Admin: approve a request — immediately applies the advisory."""
+    """Admin: approve a request - immediately applies the advisory."""
     updated = review_advisory_request(req_id, 'approve', reviewed_by=g.user.get('username'))
     if not updated:
         return jsonify({'error': 'Request not found'}), 404
@@ -438,7 +438,7 @@ def approve_advisory_request(req_id):
 @baggage_bp.route('/advisories/requests/<int:req_id>/reject', methods=['PUT'])
 @token_required('admin')
 def reject_advisory_request(req_id):
-    """Admin: reject a request — no advisory change applied."""
+    """Admin: reject a request - no advisory change applied."""
     updated = review_advisory_request(req_id, 'reject', reviewed_by=g.user.get('username'))
     if not updated:
         return jsonify({'error': 'Request not found'}), 404
@@ -446,7 +446,7 @@ def reject_advisory_request(req_id):
 
 
 # ---------------------------------------------------------------------------
-# Arrival notification opt-in — public
+# Arrival notification opt-in - public
 # ---------------------------------------------------------------------------
 
 @baggage_bp.route('/track/notify', methods=['POST'])
@@ -466,7 +466,7 @@ def subscribe_arrival():
 
 
 # ---------------------------------------------------------------------------
-# Analytics routes — admin only (Step 4 of feature plan)
+# Analytics routes - admin only (Step 4 of feature plan)
 # ---------------------------------------------------------------------------
 
 @baggage_bp.route('/stats/anomaly-trend', methods=['GET'])

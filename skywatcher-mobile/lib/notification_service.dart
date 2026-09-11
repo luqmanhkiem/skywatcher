@@ -5,7 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 ///
 /// We don't use a remote push server (no Apple Developer account / FCM needed
 /// for the FYP). Instead the app polls /api/alerts every few seconds and fires a
-/// *local* notification whenever a brand-new anomaly appears — this buzzes the
+/// *local* notification whenever a brand-new anomaly appears - this buzzes the
 /// phone and updates the badge exactly like remote push would, at zero cost.
 class NotificationService {
   NotificationService._();
@@ -36,7 +36,7 @@ class NotificationService {
         ?.requestNotificationsPermission();
 
     // iOS: v17+ requires an explicit requestPermissions() call in addition to
-    // the DarwinInitializationSettings flags — without this iOS never shows banners.
+    // the DarwinInitializationSettings flags - without this iOS never shows banners.
     await _plugin
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>()

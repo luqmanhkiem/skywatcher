@@ -27,7 +27,7 @@ const CP_COLORS = {
   arrival: '#00CC7D',
 }
 
-// Operator actions — `from` mirrors ACTION_TRANSITIONS in state_machine.py so we
+// Operator actions - `from` mirrors ACTION_TRANSITIONS in state_machine.py so we
 // only surface actions that are valid from the bag's current state (the backend
 // still validates and returns 409 on anything illegal).
 const OPERATOR_ACTIONS = [
@@ -71,7 +71,7 @@ export default function BagHistoryModal({ tagId, passenger, flightId, status, bo
   const lastEvent = events[events.length - 1]
   const qrRef = useRef(null)
 
-  // Status-history (FSM transition trail) — polled alongside the event history.
+  // Status-history (FSM transition trail) - polled alongside the event history.
   const histFn = useCallback(() => fetchBagStatusHistory(tagId), [tagId])
   const { data: histData, refresh: refreshHist } = usePolling(histFn, 5000)
   const transitions = histData?.history ?? []

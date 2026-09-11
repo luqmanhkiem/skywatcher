@@ -120,7 +120,7 @@ class _NavItem {
 }
 
 /// Custom bottom nav where the active item is an indigo pill (icon + label),
-/// inactive items show just the icon — matching the reference aesthetic.
+/// inactive items show just the icon - matching the reference aesthetic.
 class _PillNavBar extends StatelessWidget {
   final int index;
   final ValueChanged<int> onTap;

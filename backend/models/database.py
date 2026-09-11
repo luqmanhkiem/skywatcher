@@ -137,7 +137,7 @@ def insert_event(payload: dict, actor: str = 'device') -> dict:
         bag_row['booking_ref'] = booking_ref
     db.table('bags').upsert(bag_row, on_conflict='tag_id').execute()
 
-    # Insert event — ignore duplicate (tag_id, checkpoint, timestamp)
+    # Insert event - ignore duplicate (tag_id, checkpoint, timestamp)
     db.table('events').upsert({
         'tag_id':        tag_id,
         'checkpoint':    checkpoint,
@@ -154,7 +154,7 @@ def insert_event(payload: dict, actor: str = 'device') -> dict:
         )
 
     # Loop closure: email opt-in passengers the moment the bag reaches ARRIVED.
-    # Lazy import — notifier imports this module, so avoid a top-level cycle.
+    # Lazy import - notifier imports this module, so avoid a top-level cycle.
     if new_status == 'ARRIVED' and current_status != 'ARRIVED':
         try:
             from notifier import notify_arrival
@@ -232,7 +232,7 @@ def apply_operator_action(tag_id: str, action: str,
 
     Returns the transition dict, or None if the bag does not exist. Raises
     ``InvalidTransition`` (from state_machine) if the action is illegal from the
-    bag's current state — the route layer maps that to HTTP 409.
+    bag's current state - the route layer maps that to HTTP 409.
     """
     bag = get_bag_by_tag(tag_id)
     if not bag:
@@ -451,7 +451,7 @@ def verify_and_consume_reset_token(token: str) -> Optional[dict]:
         return None
     # Mark used
     db.table('password_reset_tokens').update({'used': True}).eq('id', row['id']).execute()
-    # Fetch the user separately — avoids relying on PostgREST's embedded-resource
+    # Fetch the user separately - avoids relying on PostgREST's embedded-resource
     # FK relationship lookup, which can lag behind the schema cache.
     user_resp = db.table('users').select('*').eq('id', row['user_id']).limit(1).execute()
     return user_resp.data[0] if user_resp.data else None
@@ -662,7 +662,7 @@ def _recover_bag_after_resolution(tag_id: Optional[str]) -> None:
     if not bag:
         return
     if get_anomalies_for_bag(tag_id, only_unresolved=True):
-        return  # other anomalies still open — leave the bag flagged
+        return  # other anomalies still open - leave the bag flagged
 
     current = state_machine.normalize_status(bag.get('status'), bag.get('last_checkpoint'))
     target  = state_machine.RESOLUTION_TRANSITIONS.get(current)

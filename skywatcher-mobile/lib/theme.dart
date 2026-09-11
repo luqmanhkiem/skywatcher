@@ -19,7 +19,7 @@ class AppColors {
   static const muted = Color(0xFF6B6B6B); // (--muted)
   static const line = Color(0xFFE5E2D8); // (--border)
 
-  // Anomaly types — semantic, matched to the dashboard palette.
+  // Anomaly types - semantic, matched to the dashboard palette.
   static const bypass = Color(0xFF7C3AED); // (--purple)
   static const wrongRoute = Color(0xFFDC2626); // (--danger)
   static const stall = Color(0xFFEA580C); // (--warning)
@@ -82,7 +82,7 @@ double checkpointProgress(String? lastCheckpoint) {
   return (i + 1) / kCheckpointFlow.length;
 }
 
-/// ── Bag state machine (FSM) — mirrors backend/models/state_machine.py ────────
+/// ── Bag state machine (FSM) - mirrors backend/models/state_machine.py ────────
 
 /// Colour for an FSM bag status (happy states matched to checkpoint colours;
 /// exception states in red/orange/slate). Legacy values map sensibly too.
@@ -220,7 +220,7 @@ ThemeData buildAppTheme() {
   );
 }
 
-/// The SkyWatcher brand mark — an "S" monogram on a near-black rounded square,
+/// The SkyWatcher brand mark - an "S" monogram on a near-black rounded square,
 /// identical to the web dashboard (sidebar / landing nav / login).
 class BrandMark extends StatelessWidget {
   final double size;
@@ -286,7 +286,7 @@ class SoftCard extends StatelessWidget {
   }
 }
 
-/// A pill chip with a leading colored dot — used for priority / type / status.
+/// A pill chip with a leading colored dot - used for priority / type / status.
 class DotChip extends StatelessWidget {
   final String label;
   final Color color;

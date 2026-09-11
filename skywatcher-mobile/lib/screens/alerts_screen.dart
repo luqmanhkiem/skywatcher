@@ -4,7 +4,7 @@ import '../api.dart';
 import '../theme.dart';
 import '../notification_service.dart';
 
-/// Live anomaly alerts — the core ground-staff screen.
+/// Live anomaly alerts - the core ground-staff screen.
 /// Polls every 5s, supports pull-to-refresh, fires local notifications on new
 /// anomalies, and lets staff resolve alerts.
 class AlertsScreen extends StatefulWidget {
@@ -28,7 +28,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
   Timer? _timer;
   _Filter _filter = _Filter.all;
 
-  // Anomaly ids we've already seen — used to notify only on genuinely NEW ones.
+  // Anomaly ids we've already seen - used to notify only on genuinely NEW ones.
   final Set<int> _seenIds = {};
   bool _seeded = false;
 

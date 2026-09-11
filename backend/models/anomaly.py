@@ -1,9 +1,9 @@
 """
-Anomaly Detection — SkyWatcher
+Anomaly Detection - SkyWatcher
 Uses scikit-learn Isolation Forest to detect three anomaly types:
-  1. STALL           — bag at checkpoint longer than threshold
-  2. WRONG_ROUTE     — checkpoint out of expected sequential order
-  3. SECURITY_BYPASS — security step missing from bag history
+  1. STALL - bag at checkpoint longer than threshold
+  2. WRONG_ROUTE - checkpoint out of expected sequential order
+  3. SECURITY_BYPASS - security step missing from bag history
 
 Features fed to the model: [duration_mins, checkpoint_index, expected_next_index]
 """
@@ -30,7 +30,7 @@ CHECKPOINT_ORDER: dict[str, int] = {
 }
 
 # ---------------------------------------------------------------------------
-# Isolation Forest — trained once at module import on synthetic normal data
+# Isolation Forest - trained once at module import on synthetic normal data
 # ---------------------------------------------------------------------------
 
 # Per-checkpoint normal duration ranges, padded slightly beyond the simulator's
@@ -38,11 +38,11 @@ CHECKPOINT_ORDER: dict[str, int] = {
 # loading 12 min) sit comfortably inside the model's "normal" region.
 # Format: (low, high) for sampling.
 _TRAINING_DURATIONS = {
-    0: (1, 10),   # check_in   (sim: 3–8)
-    1: (1, 8),    # security   (sim: 2–6)
-    2: (2, 13),   # sorting    (sim: 4–10)
-    3: (3, 15),   # loading    (sim: 5–12)
-    4: (0.5, 6),  # arrival    (sim: 1–4)
+    0: (1, 10),   # check_in   (sim: 3-8)
+    1: (1, 8),    # security   (sim: 2-6)
+    2: (2, 13),   # sorting    (sim: 4-10)
+    3: (3, 15),   # loading    (sim: 5-12)
+    4: (0.5, 6),  # arrival    (sim: 1-4)
 }
 
 
@@ -94,9 +94,9 @@ def detect_anomaly(payload: dict) -> Optional[dict]:
 
     cp_idx = CHECKPOINT_ORDER.get(checkpoint, -1)
     if cp_idx == -1:
-        return None  # unknown checkpoint — ignore
+        return None  # unknown checkpoint - ignore
 
-    # 1. STALL — bag exceeded time threshold at this checkpoint
+    # 1. STALL - bag exceeded time threshold at this checkpoint
     if duration_mins >= STALL_THRESHOLD:
         score = _confidence([duration_mins, cp_idx, min(cp_idx + 1, 4)])
         return _anomaly(
@@ -108,7 +108,7 @@ def detect_anomaly(payload: dict) -> Optional[dict]:
     # history is DESC by timestamp; [0] = current (just inserted), [1] = previous
     history = get_recent_events_for_bag(tag_id, limit=11)
 
-    # 2. WRONG_ROUTE — current checkpoint skips more than one step from previous
+    # 2. WRONG_ROUTE - current checkpoint skips more than one step from previous
     if len(history) > 1:
         prev_cp = history[1].get('checkpoint')  # index 1 = previous event
         prev_idx = CHECKPOINT_ORDER.get(prev_cp, -1)
@@ -121,7 +121,7 @@ def detect_anomaly(payload: dict) -> Optional[dict]:
                 f'({_checkpoint_name(prev_idx + 1)}).',
             )
 
-    # 3. SECURITY_BYPASS — reached sorting/loading/arrival without security
+    # 3. SECURITY_BYPASS - reached sorting/loading/arrival without security
     if cp_idx >= CHECKPOINT_ORDER['sorting']:
         visited = {e.get('checkpoint') for e in history}
         if 'security' not in visited:
@@ -131,7 +131,7 @@ def detect_anomaly(payload: dict) -> Optional[dict]:
                 f'Bag reached {checkpoint} with no security screening on record.',
             )
 
-    # 4. Catch-all — Isolation Forest flags subtle anomaly
+    # 4. Catch-all - Isolation Forest flags subtle anomaly
     # Skip on first scan (no history baseline yet). Gate by the model's own
     # contamination-based decision boundary (predict() == -1) instead of a raw
     # score threshold, which was previously firing on every normal event.

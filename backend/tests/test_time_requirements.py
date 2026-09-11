@@ -1,5 +1,5 @@
 """
-TIME REQUIREMENT TEST CASES — SkyWatcher (real-time performance)
+TIME REQUIREMENT TEST CASES - SkyWatcher (real-time performance)
 
 SkyWatcher is a real-time baggage-tracking system: an RFID scan must be turned
 into a stored event, analysed for anomalies, and surfaced on the dashboard fast
@@ -98,7 +98,7 @@ def _report(name, samples):
     return stats
 
 
-# --- TC-T01 / TR-1 — mean detection latency ----------------------------------
+# --- TC-T01 / TR-1 - mean detection latency ----------------------------------
 def test_TR1_mean_detection_latency_under_50ms(fake_db):
     stats = _report('TR-1/2/3 detection latency',
                     _measure_detection_latencies(fake_db))
@@ -108,7 +108,7 @@ def test_TR1_mean_detection_latency_under_50ms(fake_db):
     )
 
 
-# --- TC-T02 / TR-2 — 95th-percentile latency ---------------------------------
+# --- TC-T02 / TR-2-95th-percentile latency ---------------------------------
 def test_TR2_p95_detection_latency_under_100ms(fake_db):
     stats = _report('TR-2 p95 detection latency',
                     _measure_detection_latencies(fake_db))
@@ -118,7 +118,7 @@ def test_TR2_p95_detection_latency_under_100ms(fake_db):
     )
 
 
-# --- TC-T03 / TR-3 — worst-case latency --------------------------------------
+# --- TC-T03 / TR-3 - worst-case latency --------------------------------------
 def test_TR3_worst_case_latency_under_250ms(fake_db):
     stats = _report('TR-3 worst-case detection latency',
                     _measure_detection_latencies(fake_db))
@@ -128,7 +128,7 @@ def test_TR3_worst_case_latency_under_250ms(fake_db):
     )
 
 
-# --- TC-T04 / TR-4 — Isolation Forest inference latency -----------------------
+# --- TC-T04 / TR-4 - Isolation Forest inference latency -----------------------
 def test_TR4_isolation_forest_inference_under_20ms():
     features = [[5.0, 1, 2]]
     for _ in range(WARMUP_ITERS):
@@ -147,7 +147,7 @@ def test_TR4_isolation_forest_inference_under_20ms():
     )
 
 
-# --- TC-T05 / TR-5 — sustained throughput ------------------------------------
+# --- TC-T05 / TR-5 - sustained throughput ------------------------------------
 def test_TR5_throughput_at_least_100_events_per_second(fake_db):
     fake_db.set_history(['check_in', 'security'])
     payload = make_event('security', duration_mins=4.0)
@@ -168,7 +168,7 @@ def test_TR5_throughput_at_least_100_events_per_second(fake_db):
     )
 
 
-# --- TC-T06 / TR-6 — cold single-call latency --------------------------------
+# --- TC-T06 / TR-6 - cold single-call latency --------------------------------
 def test_TR6_cold_single_call_under_500ms(fake_db):
     """First real detection after start-up must still respond within 500 ms."""
     fake_db.set_history(['check_in', 'security'])

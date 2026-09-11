@@ -201,7 +201,7 @@ export default function FeedbackInbox() {
 function TicketDetail({ ticket, notes, setNotes, savingNotes, onSaveNotes, onSetStatus, onReply, isMobile }) {
   const cat = CATEGORY_META[ticket.category] ?? CATEGORY_META.other
 
-  // Pre-filled reply template — opens the OS mail app (Mail.app on macOS) via mailto:
+  // Pre-filled reply template - opens the OS mail app (Mail.app on macOS) via mailto:
   const mailSubject = `Re: Your SkyWatcher report #${ticket.id} — ${cat.label}`
   const mailBody = [
     `Dear ${ticket.name},`,

@@ -30,7 +30,7 @@ def _is_rate_limited(ip: str) -> bool:
 @feedback_bp.route('/feedback', methods=['POST'])
 def submit_feedback():
     """
-    Public endpoint — a passenger submits a feedback / issue report.
+    Public endpoint - a passenger submits a feedback / issue report.
     No authentication required, but rate-limited per IP to deter spam.
     """
     ip = request.headers.get('X-Forwarded-For', request.remote_addr or 'unknown').split(',')[0].strip()
@@ -76,7 +76,7 @@ def submit_feedback():
 @feedback_bp.route('/feedback', methods=['GET'])
 @token_required('admin', 'ground_staff')
 def list_feedback():
-    """Staff inbox — all tickets newest-first plus per-status counts."""
+    """Staff inbox - all tickets newest-first plus per-status counts."""
     limit   = request.args.get('limit', 100, type=int)
     tickets = get_feedback(limit=limit)
 

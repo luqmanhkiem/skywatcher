@@ -4,7 +4,7 @@ import '../api.dart';
 import '../theme.dart';
 import 'bag_journey_screen.dart';
 
-/// QR scanner — the flagship "real input" path. Scan a printed bag tag (which
+/// QR scanner - the flagship "real input" path. Scan a printed bag tag (which
 /// encodes the public /track URL) or enter a tag id by hand, resolve it to a
 /// bag, then open that bag's detail to register a checkpoint scan.
 ///
@@ -227,7 +227,7 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 }
 
-/// Shown when the camera can't start (no camera / permission denied) — e.g. the
+/// Shown when the camera can't start (no camera / permission denied) - e.g. the
 /// iOS Simulator. Keeps the manual-entry path one tap away.
 class _CameraUnavailable extends StatelessWidget {
   final VoidCallback onManual;

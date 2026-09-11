@@ -1,5 +1,5 @@
 """
-Authenticated API integration tests — SkyWatcher
+Authenticated API integration tests - SkyWatcher
 
 Covers the report's test cases that require a signed-in session:
 

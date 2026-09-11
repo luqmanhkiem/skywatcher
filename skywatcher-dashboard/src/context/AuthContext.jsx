@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
     api.get('/auth/me')
       .then(r => setUser(r.data.user))
       .catch(() => {
-        // Token stale or invalid — clear it
+        // Token stale or invalid - clear it
         localStorage.removeItem(TOKEN_KEY)
         setToken(null)
         setUser(null)

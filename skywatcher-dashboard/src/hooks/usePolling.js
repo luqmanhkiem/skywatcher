@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 
 /**
- * usePolling — fetch data on an interval, return { data, loading, error, refresh }
- * @param {Function} fetchFn  — async function that returns data
- * @param {number}   interval — polling interval in ms (default 3000)
+ * usePolling - fetch data on an interval, return { data, loading, error, refresh }
+ * @param {Function} fetchFn - async function that returns data
+ * @param {number}   interval - polling interval in ms (default 3000)
  */
 export function usePolling(fetchFn, interval = 3000) {
   const [data, setData] = useState(null)

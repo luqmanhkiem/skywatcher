@@ -140,7 +140,7 @@ def simulate_bag(client: mqtt.Client, bag: dict, speed: float = 1.0):
         client.publish(MQTT_TOPIC, json.dumps(payload))
         print(f'[SIM] Published: {tag_id} → {cp} ({duration}m)')
 
-        # Wait 5–30 s before the bag reaches the next checkpoint (scaled by --speed)
+        # Wait 5-30 s before the bag reaches the next checkpoint (scaled by --speed)
         time.sleep(random.uniform(5, 30) * speed)
 
 

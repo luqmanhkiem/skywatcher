@@ -62,7 +62,7 @@ class _BagJourneyScreenState extends State<BagJourneyScreen> {
       try {
         transitions = await widget.api.getBagStatusHistory(widget.tagId);
       } catch (_) {
-        // Backend not yet restarted or bag has no status history — show empty trail
+        // Backend not yet restarted or bag has no status history - show empty trail
       }
       if (!mounted) return;
       setState(() {

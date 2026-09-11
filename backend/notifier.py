@@ -5,14 +5,14 @@ Sends an email whenever any anomaly (STALL / WRONG_ROUTE / SECURITY_BYPASS) is
 detected, so the ops team is alerted even when nobody is watching the dashboard.
 The subject line carries a severity label per type.
 
-Configuration (all via .env — see .env.example):
+Configuration (all via .env - see .env.example):
     SMTP_HOST       e.g. smtp.gmail.com
     SMTP_PORT       e.g. 587
     SMTP_USER       sending account username
     SMTP_PASS       sending account password / app password
     ALERT_EMAIL_TO  recipient address for alerts
 
-If any required variable is unset, sending is skipped with a log line — the
+If any required variable is unset, sending is skipped with a log line - the
 system runs fine without SMTP configured (useful for local development/demo).
 """
 import os
@@ -28,7 +28,7 @@ from models.database import (
     get_bag_by_tag,
 )
 
-# Severity label per anomaly type — every type triggers an email; this only
+# Severity label per anomaly type - every type triggers an email; this only
 # changes the wording in the subject line.
 SEVERITY = {
     'SECURITY_BYPASS': 'CRITICAL',

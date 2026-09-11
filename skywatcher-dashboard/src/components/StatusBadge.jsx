@@ -5,7 +5,7 @@ const BADGE_STYLES = {
   SECURITY_BYPASS: { bg: 'rgba(124,58,237,0.12)',  color: '#7C3AED', border: 'rgba(124,58,237,0.25)' },
   ANOMALY:         { bg: 'rgba(245,166,35,0.14)',  color: '#B45309', border: 'rgba(245,166,35,0.3)'  },
 
-  // ── FSM bag states (happy path — colour-matched to checkpoint dots) ──────
+  // ── FSM bag states (happy path - colour-matched to checkpoint dots) ──────
   REGISTERED:      { bg: 'rgba(56,189,248,0.12)',  color: '#0284C7', border: 'rgba(56,189,248,0.3)'  },
   SCREENED:        { bg: 'rgba(245,166,35,0.12)',  color: '#B45309', border: 'rgba(245,166,35,0.25)' },
   SORTED:          { bg: 'rgba(167,139,250,0.14)', color: '#7C3AED', border: 'rgba(167,139,250,0.3)' },

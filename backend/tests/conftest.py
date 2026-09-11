@@ -57,7 +57,7 @@ def make_history(checkpoints, tag_id='TAG-TEST'):
             'timestamp': (now + timedelta(minutes=i)).isoformat(),
             'duration_mins': 5.0,
         })
-    rows.reverse()  # DESC — index 0 = most recent
+    rows.reverse()  # DESC - index 0 = most recent
     return rows
 
 
